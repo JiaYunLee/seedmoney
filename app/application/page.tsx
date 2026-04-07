@@ -1205,11 +1205,11 @@ function DashboardFooter() {
     <div className="border-t border-[#b5b5b5] flex items-center justify-between pt-6 font-[family-name:var(--font-opensans)] text-[14px] text-[#666]">
       <span>© 2026 SeedMoney All Rights Reserved.</span>
       <div className="flex gap-6 items-center">
-        <a href="#" className="hover:underline">SeedMoney</a>
-        <a href="#" className="hover:underline">Contact</a>
-        <a href="#" className="hover:underline">FAQ</a>
-        <a href="#" className="hover:underline">Terms</a>
-        <a href="#" className="hover:underline">Privacy Policy</a>
+        <a href="https://donate.seedmoney.org/" className="hover:underline">SeedMoney</a>
+        <a href="https://donate.seedmoney.org/contact" className="hover:underline">Contact</a>
+        <a href="https://donate.seedmoney.org/faq" className="hover:underline">FAQ</a>
+        <a href="https://donate.seedmoney.org/tos" className="hover:underline">Terms</a>
+        <a href="https://donate.seedmoney.org/privacy" className="hover:underline">Privacy Policy</a>
       </div>
     </div>
   );
