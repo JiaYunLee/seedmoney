@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Sidebar } from "@/app/components/Sidebar";
 import Image from "next/image";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -1227,6 +1228,7 @@ export default function ApplicationPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [pendingCampaigns, setPendingCampaigns] = useState<{ title: string }[]>([]);
   const [checked, setChecked] = useState<boolean[]>(
     Array(GRANTEE_ITEMS.length).fill(false)
   );
@@ -1282,6 +1284,23 @@ export default function ApplicationPage() {
     orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
     firstName, lastName, contactEmail, contactRole,
   };
+
+  // Read pending campaigns on mount
+  useEffect(() => {
+    const rawPending = sessionStorage.getItem("seedmoney_pending");
+    if (rawPending) {
+      try {
+        const parsed = JSON.parse(rawPending);
+        if (Array.isArray(parsed)) {
+          setPendingCampaigns(parsed);
+        } else if (parsed && typeof parsed.title === "string") {
+          const migrated = [{ title: parsed.title }];
+          setPendingCampaigns(migrated);
+          sessionStorage.setItem("seedmoney_pending", JSON.stringify(migrated));
+        }
+      } catch {}
+    }
+  }, []);
 
   // Restore draft on mount
   useEffect(() => {
@@ -1419,141 +1438,18 @@ export default function ApplicationPage() {
     <ThemeProvider theme={muiTheme}>
     <div className="flex h-screen bg-[#f6faf9] overflow-hidden">
       {/* Left nav sidebar */}
-      <div
-        className={`bg-[#2d7a45] flex flex-col h-full items-center justify-between shrink-0 relative transition-all duration-200 ${
-          sidebarCollapsed ? "w-[105px]" : "w-[280px]"
-        }`}
-      >
-        {/* Avatar (+ name when expanded) */}
-        <div className="flex flex-col items-center w-full">
-          <div
-            className={`flex items-center pt-[60px] pb-8 px-6 w-full ${
-              sidebarCollapsed ? "justify-center" : "gap-4"
-            }`}
-          >
-            <div className="bg-white rounded-full size-[60px] shrink-0 relative overflow-hidden">
-              <Image
-                src={imgAvatar}
-                alt="Avatar"
-                fill
-                className="object-cover object-left"
-                unoptimized
-              />
-            </div>
-            {!sidebarCollapsed && (
-              <div className="flex flex-col items-start overflow-hidden">
-                <p className="font-bold text-[24px] leading-[1.334] text-white whitespace-nowrap">
-                  John Doe
-                </p>
-                <p className="text-[16px] leading-[1.5] text-white/70 whitespace-nowrap">
-                  Campaign Leader
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Campaign nav — shows draft title while filling the form */}
-          <div className="flex flex-col items-start w-full">
-            {sidebarCollapsed ? (
-              <div className="flex h-[80px] items-center px-6 w-full bg-[#1a4a28]">
-                <div className="bg-white rounded-full size-[13px] shrink-0" />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center px-6 py-3 w-full">
-                  <p className="text-[16px] leading-[1.5] text-white/90">2026 Campaign</p>
-                </div>
-                <div className="flex items-center px-12 py-6 w-full bg-[#1a4a28]">
-                  <p className="font-bold text-[20px] leading-[1.6] text-white">
-                    {(campaignTitle.trim() || "Untitled")} (Draft)
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div
-          className={`flex flex-col gap-2 w-full py-8 ${
-            sidebarCollapsed ? "px-3 items-center" : "px-6"
-          }`}
-        >
-          {sidebarCollapsed ? (
-            <>
-              <button disabled className="bg-white border border-[#a6a6a6] rounded-[4px] flex items-center justify-center p-[14px] w-full cursor-not-allowed">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]">
-                <div className="relative size-5 shrink-0">
-                  <Image src={imgIconSettings} alt="Settings" fill className="object-contain" unoptimized />
-                </div>
-              </button>
-              <button
-                onClick={() => router.push("/")}
-                className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]"
-              >
-                <div className="relative size-5 shrink-0">
-                  <Image src={imgIconLogout} alt="Log Out" fill className="object-contain" unoptimized />
-                </div>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                disabled
-                className="bg-white border border-[#a6a6a6] rounded-[8px] flex items-center gap-2 justify-center px-[26px] py-3 w-full cursor-not-allowed"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <span className="font-bold text-[20px] leading-[1.5] text-[#a6a6a6] uppercase whitespace-nowrap">
-                  New Campaign
-                </span>
-              </button>
-              <button className="flex items-center gap-2 justify-center px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors">
-                <div className="relative size-5 shrink-0">
-                  <Image src={imgIconSettings} alt="" fill className="object-contain" unoptimized />
-                </div>
-                <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
-                  Settings
-                </span>
-              </button>
-              <button
-                onClick={() => router.push("/")}
-                className="flex items-center gap-2 justify-center px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors"
-              >
-                <div className="relative size-5 shrink-0">
-                  <Image src={imgIconLogout} alt="" fill className="object-contain" unoptimized />
-                </div>
-                <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
-                  Log Out
-                </span>
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Collapse / expand toggle */}
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className={`absolute top-[124px] bg-white border-[3.4px] border-[#2d7a45] rounded-full size-[48px] flex items-center justify-center z-10 hover:bg-gray-50 transition-colors ${
-            sidebarCollapsed ? "-right-[24px]" : "-right-[25px]"
-          }`}
-        >
-          <div className="relative size-[27px]">
-            <Image
-              src={sidebarCollapsed ? imgIconExpandRight : imgIconCollapseLeft}
-              alt={sidebarCollapsed ? "Expand" : "Collapse"}
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
-        </button>
-      </div>
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        pendingCampaigns={pendingCampaigns}
+        draftTitle={campaignTitle || ""}
+        selectedNav={{ type: "draft" }}
+        onSelectPending={() => router.push("/dashboard")}
+        onSelectDraft={() => {}}
+        onNewCampaign={() => {}}
+        onLogout={() => router.push("/")}
+        disableNewCampaign
+      />
 
       {/* Main content */}
       <div ref={scrollRef} className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-10 pt-[60px] pb-5">

@@ -1,8 +1,20 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { Sidebar, type SelectedNav } from "@/app/components/Sidebar";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
+import MuiAlert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Snackbar from "@mui/material/Snackbar";
+import Slide, { type SlideProps } from "@mui/material/Slide";
+
+// ── snackbar slide transition (right → left, ease-out-back) ──────────────────
+function SlideLeft(props: SlideProps) {
+  return <Slide {...props} direction="left" />;
+}
 
 // ── icon assets ──────────────────────────────────────────────────────────────
 const imgAvatar =
@@ -26,6 +38,12 @@ const imgIconSettingsCollapsed =
   "https://www.figma.com/api/mcp/asset/c38ba6d5-69d8-42f0-babc-1ad9b9b72461";
 const imgIconLogoutCollapsed =
   "https://www.figma.com/api/mcp/asset/bbd7c7c7-02cc-4905-b4e8-c853db851445";
+// active campaign button icons
+const imgIconExternalLinkWhite =
+  "https://www.figma.com/api/mcp/asset/b01ab7fb-bbc8-4f55-95c1-5d957c309a6a";
+const imgIconExternalLinkGreen =
+  "https://www.figma.com/api/mcp/asset/f4586f99-353d-42be-b576-fa5f9c0ea3f9";
+
 // dashboard content icons
 const imgIconDollar =
   "https://www.figma.com/api/mcp/asset/fc65b734-bd9c-4aa4-a7e7-2a10991848e0";
@@ -177,258 +195,8 @@ function NewCampaignModal({
   );
 }
 
-// ── sidebar ───────────────────────────────────────────────────────────────────
-type SelectedNav =
-  | { type: "pending"; idx: number }
-  | { type: "draft" }
-  | null;
+// ── sidebar: imported from @/app/components/Sidebar ──────────────────────────
 
-interface SidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
-  activeCampaignId: number | null;
-  onCampaignSelect: (id: number) => void;
-  onNewCampaign: () => void;
-  onLogout: () => void;
-  campaigns?: typeof CAMPAIGNS;
-  draftTitle?: string | null;
-  pendingCampaigns: { title: string }[];
-  selectedNav: SelectedNav;
-  onSelectPending: (idx: number) => void;
-  onSelectDraft: () => void;
-}
-
-function Sidebar({
-  collapsed,
-  onToggle,
-  activeCampaignId,
-  onCampaignSelect,
-  onNewCampaign,
-  onLogout,
-  campaigns = [],
-  draftTitle,
-  pendingCampaigns,
-  selectedNav,
-  onSelectPending,
-  onSelectDraft,
-}: SidebarProps) {
-  const hasDraft = draftTitle != null;
-  const draftLabel = (draftTitle?.trim() || "Untitled") + " (Draft)";
-  return (
-    <div
-      className={`bg-[#2d7a45] flex flex-col h-full items-center justify-between shrink-0 relative transition-all duration-200 ${
-        collapsed ? "w-[105px]" : "w-[280px]"
-      }`}
-    >
-      {/* Top: profile + campaigns */}
-      <div className="flex flex-col items-center w-full">
-        {/* Profile */}
-        <div
-          className={`flex items-center pt-[60px] pb-8 px-6 w-full ${
-            collapsed ? "justify-center" : "gap-4"
-          }`}
-        >
-          <div className="bg-white rounded-full size-[60px] shrink-0 relative overflow-hidden">
-            <Image
-              src={imgAvatar}
-              alt="Avatar"
-              fill
-              className="object-cover object-left"
-              unoptimized
-            />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col items-start overflow-hidden">
-              <p className="font-bold text-[24px] leading-[1.334] text-white whitespace-nowrap">
-                John Doe
-              </p>
-              <p className="text-[16px] leading-[1.5] text-white/70 whitespace-nowrap">
-                Campaign Leader
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Campaign list */}
-        <div className="flex flex-col items-start w-full">
-          {collapsed ? (
-            <>
-              <div className="h-[48px] w-full" />
-              {pendingCampaigns.map((_, idx) => (
-                <button
-                  key={`pending-${idx}`}
-                  onClick={() => onSelectPending(idx)}
-                  className={`flex h-[80px] items-center px-6 w-full transition-colors ${
-                    selectedNav?.type === "pending" && selectedNav.idx === idx
-                      ? "bg-[#1a4a28]"
-                      : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <div className="bg-white rounded-full size-[13px] shrink-0" />
-                </button>
-              ))}
-              {hasDraft && (
-                <button
-                  onClick={onSelectDraft}
-                  className={`flex h-[80px] items-center px-6 w-full transition-colors ${
-                    selectedNav?.type === "draft" ? "bg-[#1a4a28]" : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <div className="bg-white rounded-full size-[13px] shrink-0" />
-                </button>
-              )}
-              {campaigns.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onCampaignSelect(c.id)}
-                  className={`flex h-[80px] items-center px-6 w-full transition-colors ${
-                    activeCampaignId === c.id ? "bg-[#1a4a28]" : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <div className="bg-white rounded-full size-[13px] shrink-0" />
-                </button>
-              ))}
-            </>
-          ) : (
-            <>
-              <div className="flex items-center px-6 py-3 w-full">
-                <p className="text-[16px] leading-[1.5] text-white/90">2026 Campaign</p>
-              </div>
-              {pendingCampaigns.map((pc, idx) => (
-                <button
-                  key={`pending-${idx}`}
-                  onClick={() => onSelectPending(idx)}
-                  className={`flex items-center px-12 py-6 w-full text-left transition-colors ${
-                    selectedNav?.type === "pending" && selectedNav.idx === idx
-                      ? "bg-[#1a4a28]"
-                      : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <p className="font-bold text-[20px] leading-[1.6] text-white">
-                    {(pc.title.trim() || "Untitled") + " (Pending)"}
-                  </p>
-                </button>
-              ))}
-              {hasDraft && (
-                <button
-                  onClick={onSelectDraft}
-                  className={`flex items-center px-12 py-6 w-full text-left transition-colors ${
-                    selectedNav?.type === "draft" ? "bg-[#1a4a28]" : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <p className="font-bold text-[20px] leading-[1.6] text-white">{draftLabel}</p>
-                </button>
-              )}
-              {campaigns.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onCampaignSelect(c.id)}
-                  className={`flex items-center px-12 py-6 w-full text-left transition-colors ${
-                    activeCampaignId === c.id ? "bg-[#1a4a28]" : "hover:bg-[#245f37]"
-                  }`}
-                >
-                  <p className="font-bold text-[20px] leading-[1.6] text-white">{c.name}</p>
-                </button>
-              ))}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom: actions */}
-      <div
-        className={`flex flex-col gap-2 w-full py-8 ${
-          collapsed ? "px-3 items-center" : "px-6"
-        }`}
-      >
-        {collapsed ? (
-          <>
-            {/* Collapsed: icon-only buttons */}
-            <button
-              onClick={hasDraft ? undefined : onNewCampaign}
-              disabled={hasDraft}
-              className={`rounded-[4px] flex items-center justify-center p-[14px] w-full transition-colors ${hasDraft ? "bg-white opacity-50 cursor-not-allowed" : "bg-white hover:bg-gray-50"}`}
-            >
-              <div className="relative size-6 shrink-0">
-                <Image src={imgIconPlusCollapsed} alt="New Campaign" fill className="object-contain" unoptimized />
-              </div>
-            </button>
-            <button className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]">
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconSettingsCollapsed} alt="Settings" fill className="object-contain" unoptimized />
-              </div>
-            </button>
-            <button
-              onClick={onLogout}
-              className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]"
-            >
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconLogoutCollapsed} alt="Log Out" fill className="object-contain" unoptimized />
-              </div>
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Expanded: full buttons with labels */}
-            <button
-              onClick={hasDraft ? undefined : onNewCampaign}
-              disabled={hasDraft}
-              className={`border rounded-[8px] flex items-center gap-2 justify-center px-[26px] py-3 w-full transition-colors ${
-                hasDraft
-                  ? "bg-white border-[#a6a6a6] cursor-not-allowed"
-                  : "bg-white border-[#2d7a45] hover:bg-gray-50"
-              }`}
-            >
-              <div className="relative size-6 shrink-0">
-                <Image src={imgIconPlusExpanded} alt="" fill className="object-contain" unoptimized />
-              </div>
-              <span className={`font-bold text-[20px] leading-[1.5] uppercase whitespace-nowrap ${hasDraft ? "text-[#a6a6a6]" : "text-[#2d7a45]"}`}>
-                New Campaign
-              </span>
-            </button>
-            <button className="flex items-center gap-2 justify-center px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors">
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconSettings} alt="" fill className="object-contain" unoptimized />
-              </div>
-              <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
-                Settings
-              </span>
-            </button>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 justify-center px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors"
-            >
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconLogout} alt="" fill className="object-contain" unoptimized />
-              </div>
-              <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
-                Log Out
-              </span>
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Collapse / expand toggle button */}
-      <button
-        onClick={onToggle}
-        className={`absolute top-[124px] bg-white border-[3.4px] border-[#2d7a45] rounded-full size-[48px] flex items-center justify-center z-10 hover:bg-gray-50 transition-colors ${
-          collapsed ? "-right-[24px]" : "-right-[25px]"
-        }`}
-      >
-        <div className="relative size-[27px]">
-          <Image
-            src={collapsed ? imgIconExpandRight : imgIconCollapseLeft}
-            alt={collapsed ? "Expand" : "Collapse"}
-            fill
-            className="object-contain"
-            unoptimized
-          />
-        </div>
-      </button>
-    </div>
-  );
-}
 
 // ── stats cards ───────────────────────────────────────────────────────────────
 function StatsCards() {
@@ -667,97 +435,125 @@ function DonorsTab() {
 }
 
 // ── analytics tab ─────────────────────────────────────────────────────────────
+// ── chart data (Nov 15 – Dec 15 x-axis, data only through Dec 2) ─────────────
+const CHART_DATES = [
+  "Nov 15","Nov 16","Nov 17","Nov 18","Nov 19","Nov 20","Nov 21","Nov 22",
+  "Nov 23","Nov 24","Nov 25","Nov 26","Nov 27","Nov 28","Nov 29","Nov 30",
+  "Dec 1","Dec 2","Dec 3","Dec 4","Dec 5","Dec 6","Dec 7","Dec 8","Dec 9",
+  "Dec 10","Dec 11","Dec 12","Dec 13","Dec 14","Dec 15",
+];
+// Data through Dec 2 (index 17), null after
+const _daily = [75,45,68,72,65,60,88,112,120,118,115,98,44,58,62,48,52,46];
+const _total = [82,90,96,104,110,116,122,128,133,137,141,144,132,136,139,134,140,144];
+const NULL_TAIL = Array(CHART_DATES.length - _daily.length).fill(null);
+const DAILY_EARNINGS: (number | null)[] = [..._daily, ...NULL_TAIL];
+const TOTAL_EARNINGS: (number | null)[] = [..._total, ...NULL_TAIL];
+// Show every 5th label on x-axis
+const xTickInterval = (_: string, i: number) => i % 5 === 0;
+
 function AnalyticsTab() {
   return (
     <div className="flex flex-col gap-6">
       <StatsCards />
-      {/* Earnings Trend chart */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-7 px-[25px] py-6 w-full">
-        {/* Header */}
-        <div className="flex items-end justify-between">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 px-[25px] py-6 w-full">
+        {/* Header: title + custom legend */}
+        <div className="flex items-start justify-between">
           <div className="flex flex-col">
             <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Earnings Trend</p>
             <p className="text-[14px] leading-[1.33] text-[#6a7282]">Your earnings over the campaign</p>
           </div>
           <div className="flex gap-6 items-center">
-            <div className="flex gap-3 items-center">
-              <div className="relative h-0 w-4">
-                <Image src={imgChartLegendDaily} alt="" fill className="object-contain" unoptimized />
-              </div>
-              <p className="text-[14px] leading-[1.33] text-[#717182] whitespace-nowrap">Daily Earnings</p>
+            <div className="flex gap-2 items-center">
+              <svg width="20" height="4" viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" stroke="#00a87e" strokeWidth="3" strokeLinecap="round"/></svg>
+              <span className="text-[14px] text-[#717182]">Daily Earnings</span>
             </div>
-            <div className="flex gap-3 items-center">
-              <div className="relative h-0 w-4">
-                <Image src={imgChartLegendTotal} alt="" fill className="object-contain" unoptimized />
-              </div>
-              <p className="text-[14px] leading-[1.33] text-[#717182] whitespace-nowrap">Total Earnings</p>
+            <div className="flex gap-2 items-center">
+              <svg width="20" height="4" viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" stroke="#5c6bc0" strokeWidth="3" strokeLinecap="round"/></svg>
+              <span className="text-[14px] text-[#717182]">Total Earnings</span>
             </div>
           </div>
         </div>
 
-        {/* Chart area */}
-        <div className="relative h-[350px] w-full overflow-hidden">
-          {/* Y-axis labels */}
-          <div className="absolute left-0 top-[23px] flex flex-col gap-[63px] items-end w-[30px] text-[12px] text-[#6b7280] text-right font-['Inter',sans-serif]">
-            <span>$200</span>
-            <span>$150</span>
-            <span>$100</span>
-            <span>$50</span>
-            <span>$0</span>
-          </div>
+        {/* Tooltip font override — rendered in a portal outside the chart container */}
+        <style>{`.MuiChartsTooltip-root, .MuiChartsTooltip-root * { font-family: Lato, sans-serif !important; }`}</style>
 
-          {/* Horizontal grid lines */}
-          <div className="absolute left-[39px] top-[23px] right-0 h-[312px]">
-            <Image src={imgChartHorizontalLines} alt="" fill className="object-fill" unoptimized />
-          </div>
+        {/* Chart with overlaid goal badge */}
+        <div className="relative">
+          <LineChart
+            height={320}
+            margin={{ top: 20, bottom: 30, left: 55, right: 20 }}
+            series={[
+              {
+                id: "daily",
+                data: DAILY_EARNINGS,
+                label: "Daily Earnings",
+                area: true,
+                curve: "natural",
+                color: "#00a87e",
+                showMark: false,
+                connectNulls: false,
+                valueFormatter: (v: number | null) => v !== null ? `$${v}` : "",
+              },
+              {
+                id: "total",
+                data: TOTAL_EARNINGS,
+                label: "Total Earnings",
+                area: true,
+                curve: "natural",
+                color: "#5c6bc0",
+                showMark: false,
+                connectNulls: false,
+                valueFormatter: (v: number | null) => v !== null ? `$${v}` : "",
+              },
+            ]}
+            xAxis={[{
+              data: CHART_DATES,
+              scaleType: "point",
+              tickInterval: xTickInterval,
+              tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
+            }]}
+            yAxis={[{
+              min: 0,
+              max: 220,
+              valueFormatter: (v: number) => `$${v}`,
+              tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
+            }]}
+            sx={{
+              "& .MuiAreaElement-series-daily": { fill: "url(#dailyGrad)" },
+              "& .MuiAreaElement-series-total": { fill: "url(#totalGrad)" },
+              "& .MuiLineElement-root": { strokeWidth: 2 },
+              "& .MuiChartsGrid-line": { stroke: "#e5e7eb", strokeDasharray: "4 4" },
+              "& .MuiChartsLegend-root": { display: "none" },
+              fontFamily: "Lato, sans-serif",
+              "& text": { fontFamily: "Lato, sans-serif", fill: "#6b7280", fontSize: 12 },
+            }}
+            grid={{ horizontal: true, vertical: true }}
+          >
+            <defs>
+              <linearGradient id="dailyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#00a87e" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#00a87e" stopOpacity="0.0" />
+              </linearGradient>
+              <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#5c6bc0" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#5c6bc0" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+            <ChartsReferenceLine
+              y={180}
+              lineStyle={{ stroke: "#2e7d32", strokeDasharray: "6 3", strokeWidth: 1.5 }}
+            />
+          </LineChart>
 
-          {/* Vertical axis line */}
-          <div className="absolute left-[39px] top-[23px] w-[calc(100%-39px)] h-[310px]">
-            <Image src={imgChartVerticalLines} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Daily earnings area fill */}
-          <div className="absolute left-[39px] top-[45%] bottom-[9.57%] w-[60%]">
-            <Image src={imgChartAreaFill} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Daily earnings line */}
-          <div className="absolute left-[39px] top-[45%] bottom-[16.68%] w-[60%]">
-            <Image src={imgChartDailyLine} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Total earnings fill */}
-          <div className="absolute left-[39px] top-[15.71%] bottom-[8.71%] w-[60%]">
-            <Image src={imgChartTotalFill} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Total earnings line */}
-          <div className="absolute left-[39px] top-[15.71%] bottom-[35.43%] w-[60%]">
-            <Image src={imgChartTotalLine} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Today marker */}
-          <div className="absolute left-[65%] top-[23px] w-0 h-[295px]">
-            <Image src={imgChartToday} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Goal line */}
-          <div className="absolute left-[39px] top-[23px] right-0 h-0">
-            <Image src={imgChartGoal} alt="" fill className="object-fill" unoptimized />
-          </div>
-
-          {/* Goal label chip */}
-          <div className="absolute right-4 top-[5px] bg-white px-1 py-0.5">
-            <span className="border border-[#2e7d32] text-[#2e7d32] text-[13px] px-2 py-0.5 rounded-full whitespace-nowrap">
-              Your Goal: $180
-            </span>
-          </div>
-
-          {/* X-axis labels */}
-          <div className="absolute bottom-[8px] left-[39px] right-0 flex justify-between text-[12px] text-[#6b7280]">
-            {["Nov 15", "Nov 20", "Nov 25", "Nov 30", "Dec 5", "Dec 10", "Dec 15"].map((label) => (
-              <span key={label}>{label}</span>
-            ))}
+          {/* Goal badge — aligned with the y=180 reference line
+              Chart data area: top=20px, height=320-20-30=270px
+              y=180 out of 0–220: from top = 20 + (1 - 180/220) * 270 ≈ 69px
+              Badge height ≈ 26px → center at 69 - 13 = 56px */}
+          <div
+            className="absolute border border-[#2e7d32] text-[#2e7d32] text-[13px] px-3 py-0.5 rounded-full whitespace-nowrap bg-white pointer-events-none"
+            style={{ top: 56, right: 24 }}
+          >
+            Your Goal: $180
           </div>
         </div>
       </div>
@@ -879,10 +675,12 @@ function ActiveState({
   campaignName,
   activeTab,
   onTabChange,
+  onCopyLink,
 }: {
   campaignName: string;
   activeTab: "overview" | "donors" | "analytics";
   onTabChange: (t: "overview" | "donors" | "analytics") => void;
+  onCopyLink: () => void;
 }) {
   const TABS: { key: "overview" | "donors" | "analytics"; label: string }[] = [
     { key: "overview", label: "Overview" },
@@ -909,15 +707,34 @@ function ActiveState({
         ))}
       </div>
       <div className="flex gap-4 items-center flex-wrap">
-        <button className="bg-[#2d7a45] text-white font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors">
-          View Campaign Site
+        <a
+          href="https://donate.seedmoney.org/13865/full-belly-community-garden"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#2d7a45] text-white font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors flex items-center gap-1"
+        >
+          View Campaign
+          <div className="relative size-4 shrink-0">
+            <Image src={imgIconExternalLinkWhite} alt="" fill className="object-contain" unoptimized />
+          </div>
+        </a>
+        <button
+          onClick={onCopyLink}
+          className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors"
+        >
+          Copy Campaign Link
         </button>
-        <button className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors">
-          Copy Campaign Site Link
-        </button>
-        <button className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors">
+        <a
+          href="https://donate.seedmoney.org/explore"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors flex items-center gap-1"
+        >
           View Leaderboard
-        </button>
+          <div className="relative size-4 shrink-0">
+            <Image src={imgIconExternalLinkGreen} alt="" fill className="object-contain" unoptimized />
+          </div>
+        </a>
       </div>
       {activeTab === "overview" && <OverviewTab />}
       {activeTab === "donors" && <DonorsTab />}
@@ -940,17 +757,25 @@ function DashboardContent() {
 
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "donors" | "analytics">("overview");
-  const [activeCampaignId, setActiveCampaignId] = useState<number | null>(
-    state === "review" ? 1 : state === "active" ? 1 : null
-  );
   const [showModal, setShowModal] = useState(false);
   const [keyBuffer, setKeyBuffer] = useState("");
   const [draftTitle, setDraftTitle] = useState<string | null>(null);
   const [pendingCampaigns, setPendingCampaigns] = useState<{ title: string }[]>([]);
   const [selectedNav, setSelectedNav] = useState<SelectedNav>(null);
+  const [selectedActiveIdx, setSelectedActiveIdx] = useState<number>(0);
+  const [showCopied, setShowCopied] = useState(false);
 
-  // Check for saved draft / pending submission on mount
+  // Version 1: clear session data on every browser refresh so dashboard starts empty
+  // Version 2: ?state=active bypasses this and shows a pre-approved campaign
   useEffect(() => {
+    const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    if (navEntry?.type === "reload") {
+      sessionStorage.removeItem("seedmoney_draft");
+      sessionStorage.removeItem("seedmoney_pending");
+      return; // nothing to restore
+    }
+
+    // Client-side navigation (e.g. after form submit) — read session data
     const rawDraft = sessionStorage.getItem("seedmoney_draft");
     let hasDraftOnMount = false;
     if (rawDraft) {
@@ -964,14 +789,12 @@ function DashboardContent() {
         if (Array.isArray(parsed)) {
           pendingArr = parsed;
         } else if (parsed && typeof parsed.title === "string") {
-          // migrate old single-object format → array
           pendingArr = [{ title: parsed.title }];
           sessionStorage.setItem("seedmoney_pending", JSON.stringify(pendingArr));
         }
       } catch {}
     }
     setPendingCampaigns(pendingArr);
-    // Default selection: last pending if any, otherwise draft if any
     if (pendingArr.length > 0) {
       setSelectedNav({ type: "pending", idx: pendingArr.length - 1 });
     } else if (hasDraftOnMount) {
@@ -998,8 +821,6 @@ function DashboardContent() {
 
   const hasDraft = draftTitle != null;
   const hasPending = pendingCampaigns.length > 0;
-  const campaignsToShow =
-    hasDraft || hasPending ? [] : state === "empty" ? [] : state === "review" ? [CAMPAIGNS[0]] : CAMPAIGNS;
 
   function handleNewCampaign() {
     if (hasDraft) return;
@@ -1025,40 +846,37 @@ function DashboardContent() {
         <Sidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
-          activeCampaignId={activeCampaignId}
-          onCampaignSelect={setActiveCampaignId}
-          onNewCampaign={handleNewCampaign}
-          onLogout={handleLogout}
-          campaigns={campaignsToShow}
-          draftTitle={draftTitle}
-          pendingCampaigns={pendingCampaigns}
-          selectedNav={selectedNav}
+          pendingCampaigns={state === "active" ? [] : pendingCampaigns}
+          draftTitle={state === "active" ? null : draftTitle}
+          selectedNav={state === "active" ? null : selectedNav}
           onSelectPending={(idx) => setSelectedNav({ type: "pending", idx })}
           onSelectDraft={() => setSelectedNav({ type: "draft" })}
+          onNewCampaign={handleNewCampaign}
+          onLogout={handleLogout}
+          activeCampaigns={state === "active" ? ["Save the Ocean Campaign"] : []}
+          selectedActiveIdx={state === "active" ? selectedActiveIdx : undefined}
+          onSelectActive={setSelectedActiveIdx}
         />
         <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-10 pt-[60px] pb-5">
-          {state !== "active" && selectedNav?.type === "pending" && (
-            <ReviewState
-              campaignName={
-                (pendingCampaigns[selectedNav.idx]?.title.trim() || "Untitled")
-              }
+          {state === "active" && (
+            <ActiveState
+              campaignName="Save the Ocean Campaign"
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onCopyLink={() => {
+                navigator.clipboard.writeText("https://donate.seedmoney.org/13865/full-belly-community-garden");
+                setShowCopied(true);
+              }}
             />
+          )}
+          {state !== "active" && selectedNav?.type === "pending" && (
+            <ReviewState campaignName={pendingCampaigns[selectedNav.idx]?.title.trim() || "Untitled"} />
           )}
           {state !== "active" && selectedNav?.type === "draft" && hasDraft && (
             <DraftState title={draftTitle!} onContinue={handleContinueDraft} />
           )}
-          {state !== "active" && !selectedNav && !hasDraft && !hasPending && state === "empty" && (
+          {state !== "active" && !selectedNav && (
             <EmptyState onNew={handleNewCampaign} />
-          )}
-          {state !== "active" && !selectedNav && !hasDraft && !hasPending && state === "review" && (
-            <ReviewState campaignName="Fully Belly Community Garden" />
-          )}
-          {state === "active" && (
-            <ActiveState
-              campaignName="Save the Ocean"
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
           )}
         </div>
       </div>
@@ -1069,6 +887,33 @@ function DashboardContent() {
           onStart={handleStartApplication}
         />
       )}
+
+      <Snackbar
+        open={showCopied}
+        autoHideDuration={3000}
+        onClose={() => setShowCopied(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        TransitionComponent={SlideLeft}
+        TransitionProps={{
+          style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" },
+        }}
+      >
+        <MuiAlert
+          severity="success"
+          onClose={() => setShowCopied(false)}
+          sx={{
+            backgroundColor: "#edf7ed",
+            color: "#1e4620",
+            fontFamily: "Lato, sans-serif",
+            "& .MuiAlert-icon": { color: "#2e7d32" },
+            "& .MuiAlertTitle-root": { color: "#1e4620", fontWeight: 600, fontFamily: "Lato, sans-serif" },
+            "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" },
+          }}
+        >
+          <AlertTitle>Successfully Copied!</AlertTitle>
+          Link has been copied to clipboard
+        </MuiAlert>
+      </Snackbar>
     </>
   );
 }
