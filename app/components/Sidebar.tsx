@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 // ── icon assets ───────────────────────────────────────────────────────────────
 const imgAvatar =
@@ -58,6 +59,7 @@ export function Sidebar({
   selectedActiveIdx,
   onSelectActive,
 }: SidebarProps) {
+  const router = useRouter();
   const hasDraft = draftTitle != null;
   const draftLabel = (draftTitle?.trim() || "Untitled") + " (Draft)";
   const isNewCampaignDisabled = disableNewCampaign || hasDraft;
@@ -76,15 +78,18 @@ export function Sidebar({
             collapsed ? "justify-center" : "gap-4"
           }`}
         >
-          <div className="bg-white rounded-full size-[60px] shrink-0 relative overflow-hidden">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="bg-white rounded-full size-[60px] shrink-0 relative overflow-hidden hover:opacity-90 transition-opacity"
+          >
             <Image
               src={imgAvatar}
-              alt="Avatar"
+              alt="Go to dashboard"
               fill
               className="object-cover object-left"
               unoptimized
             />
-          </div>
+          </button>
           {!collapsed && (
             <div className="flex flex-col items-start overflow-hidden">
               <p className="font-bold text-[24px] leading-[1.334] text-white whitespace-nowrap">

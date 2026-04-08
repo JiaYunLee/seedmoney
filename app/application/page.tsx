@@ -1408,12 +1408,13 @@ export default function ApplicationPage() {
       existing.push({ title: campaignTitle });
       sessionStorage.setItem("seedmoney_pending", JSON.stringify(existing));
       sessionStorage.removeItem(DRAFT_KEY);
-      router.push("/dashboard?state=review");
+      sessionStorage.setItem("seedmoney_from_submit", "1");
+      router.push("/dashboard");
     }
   }
 
   function handlePrev() {
-    if (step === 0) router.push("/dashboard");
+    if (step === 0) { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }
     else { setStep((step - 1) as Step); scrollRef.current?.scrollTo({ top: 0 }); }
   }
 
@@ -1444,7 +1445,7 @@ export default function ApplicationPage() {
         pendingCampaigns={pendingCampaigns}
         draftTitle={campaignTitle || ""}
         selectedNav={{ type: "draft" }}
-        onSelectPending={() => router.push("/dashboard")}
+        onSelectPending={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
         onSelectDraft={() => {}}
         onNewCampaign={() => {}}
         onLogout={() => router.push("/")}
@@ -1498,13 +1499,24 @@ export default function ApplicationPage() {
                 })}
               </div>
 
-              <div className="flex items-center gap-2 px-2">
-                <div className="relative size-5 shrink-0">
-                  <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2 px-2">
+                  <div className="relative size-5 shrink-0">
+                    <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
+                  </div>
+                  <p className="text-[14px] leading-[1.33] text-[#666]">
+                    {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
+                  </p>
                 </div>
-                <p className="text-[14px] leading-[1.33] text-[#666]">
-                  {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
-                </p>
+                <button
+                  onClick={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
+                  className="flex items-center gap-[6px] px-2 py-[10px] rounded-[8px] hover:bg-black/5 transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                    <path d="M10 12L6 8L10 4" stroke="#666666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-[14px] leading-[1.33] text-[#666]">Exit</span>
+                </button>
               </div>
             </div>
 

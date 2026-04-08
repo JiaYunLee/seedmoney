@@ -567,18 +567,6 @@ function DraftState({ title, onContinue }: { title: string; onContinue: () => vo
   return (
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{displayTitle}</p>
-      <div className="flex items-center border-b border-[rgba(0,0,0,0.12)]">
-        {["Overview", "Donors", "Analytics"].map((tab, i) => (
-          <div
-            key={tab}
-            className={`px-4 py-[9px] font-bold text-[14px] font-[family-name:var(--font-opensans)] ${
-              i === 0 ? "text-[#2d7a45] border-b-2 border-[#2d7a45] -mb-px" : "text-[rgba(0,0,0,0.38)]"
-            }`}
-          >
-            {tab}
-          </div>
-        ))}
-      </div>
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
         <div className="border-[2.1px] border-[#00a63e] rounded-full size-20 flex items-center justify-center relative overflow-hidden">
           <Image src={imgAvatar} alt="" fill className="object-cover object-left scale-[4]" unoptimized />
@@ -620,9 +608,9 @@ function EmptyState({ onNew }: { onNew: () => void }) {
           onClick={onNew}
           className="bg-[#2d7a45] flex items-center gap-2 px-[26px] py-3 rounded-[8px] hover:bg-[#245f37] transition-colors"
         >
-          <div className="relative size-6 shrink-0">
-            <Image src={imgIconPlusExpanded} alt="" fill className="object-contain" unoptimized />
-          </div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+            <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
           <span className="font-bold text-[20px] leading-[1.5] text-white uppercase whitespace-nowrap">
             New Campaign
           </span>
@@ -639,20 +627,6 @@ function ReviewState({ campaignName }: { campaignName: string }) {
   return (
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
-      <div className="flex items-center border-b border-[rgba(0,0,0,0.12)]">
-        {["Overview", "Donors", "Analytics"].map((tab, i) => (
-          <div
-            key={tab}
-            className={`px-4 py-[9px] font-bold text-[14px] font-[family-name:var(--font-opensans)] ${
-              i === 0
-                ? "text-[#2d7a45] border-b-2 border-[#2d7a45] -mb-px"
-                : "text-[rgba(0,0,0,0.38)]"
-            }`}
-          >
-            {tab}
-          </div>
-        ))}
-      </div>
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
         <div className="border-[2.1px] border-[#00a63e] rounded-full size-20 flex items-center justify-center relative overflow-hidden">
           <Image src={imgAvatar} alt="" fill className="object-cover object-left scale-[4]" unoptimized />
@@ -765,17 +739,19 @@ function DashboardContent() {
   const [selectedActiveIdx, setSelectedActiveIdx] = useState<number>(0);
   const [showCopied, setShowCopied] = useState(false);
 
-  // Version 1: clear session data on every browser refresh so dashboard starts empty
-  // Version 2: ?state=active bypasses this and shows a pre-approved campaign
   useEffect(() => {
-    const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-    if (navEntry?.type === "reload") {
+    // Check if we arrived here from a form submit (flag set by application/page.tsx)
+    const fromSubmit = sessionStorage.getItem("seedmoney_from_submit") === "1";
+    sessionStorage.removeItem("seedmoney_from_submit"); // consume immediately
+
+    if (!fromSubmit) {
+      // Any other entry (browser refresh, direct URL, back button) → clear everything
       sessionStorage.removeItem("seedmoney_draft");
       sessionStorage.removeItem("seedmoney_pending");
-      return; // nothing to restore
+      return;
     }
 
-    // Client-side navigation (e.g. after form submit) — read session data
+    // Arrived from form submit → restore session data
     const rawDraft = sessionStorage.getItem("seedmoney_draft");
     let hasDraftOnMount = false;
     if (rawDraft) {
@@ -790,7 +766,6 @@ function DashboardContent() {
           pendingArr = parsed;
         } else if (parsed && typeof parsed.title === "string") {
           pendingArr = [{ title: parsed.title }];
-          sessionStorage.setItem("seedmoney_pending", JSON.stringify(pendingArr));
         }
       } catch {}
     }
