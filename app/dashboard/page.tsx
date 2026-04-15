@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { Suspense, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Sidebar, type SelectedNav } from "@/app/components/Sidebar";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
@@ -10,75 +9,26 @@ import MuiAlert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Snackbar from "@mui/material/Snackbar";
 import Slide, { type SlideProps } from "@mui/material/Slide";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import MuiIconButton from "@mui/material/IconButton";
+import Select from "@mui/material/Select";
+import MuiMenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Chip from "@mui/material/Chip";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 
 // ── snackbar slide transition (right → left, ease-out-back) ──────────────────
 function SlideLeft(props: SlideProps) {
   return <Slide {...props} direction="left" />;
 }
 
-// ── icon assets ──────────────────────────────────────────────────────────────
-const imgAvatar =
-  "https://www.figma.com/api/mcp/asset/a99ed0bb-5887-47ce-a031-8877365c9cfb";
-// sidebar expanded state icons
-const imgIconPlusExpanded =
-  "https://www.figma.com/api/mcp/asset/cebfd962-7862-4f3d-a6a8-660175f45cbb";
-const imgIconSettings =
-  "https://www.figma.com/api/mcp/asset/c38ba6d5-69d8-42f0-babc-1ad9b9b72461";
-const imgIconLogout =
-  "https://www.figma.com/api/mcp/asset/6033bc7f-a19b-4928-ab6b-499b7343012c";
-// collapse arrow (< when expanded, > when collapsed)
-const imgIconCollapseLeft =
-  "https://www.figma.com/api/mcp/asset/8371b03c-eae1-4053-8d41-f4587501d654";
-const imgIconExpandRight =
-  "https://www.figma.com/api/mcp/asset/16b1db03-fce3-4e6d-97a2-4b2a6c94c29b";
-// sidebar collapsed state icons
-const imgIconPlusCollapsed =
-  "https://www.figma.com/api/mcp/asset/2e4b306b-cbed-487e-8d17-76e18314a513";
-const imgIconSettingsCollapsed =
-  "https://www.figma.com/api/mcp/asset/c38ba6d5-69d8-42f0-babc-1ad9b9b72461";
-const imgIconLogoutCollapsed =
-  "https://www.figma.com/api/mcp/asset/bbd7c7c7-02cc-4905-b4e8-c853db851445";
-// active campaign button icons
-const imgIconExternalLinkWhite =
-  "https://www.figma.com/api/mcp/asset/b01ab7fb-bbc8-4f55-95c1-5d957c309a6a";
-const imgIconExternalLinkGreen =
-  "https://www.figma.com/api/mcp/asset/f4586f99-353d-42be-b576-fa5f9c0ea3f9";
-
-// dashboard content icons
-const imgIconDollar =
-  "https://www.figma.com/api/mcp/asset/fc65b734-bd9c-4aa4-a7e7-2a10991848e0";
-const imgIconPeople =
-  "https://www.figma.com/api/mcp/asset/f53e3da8-3e76-474a-bc1d-63167359e164";
-const imgIconDays =
-  "https://www.figma.com/api/mcp/asset/eeaf5cc8-ceb7-4d8d-aaba-286661878105";
-const imgIconArrowOut =
-  "https://www.figma.com/api/mcp/asset/976d1267-6bc8-4019-8fa1-df91ddf1c5f0";
-const imgIconCaretDown =
-  "https://www.figma.com/api/mcp/asset/4ab9620f-28f5-4421-92b1-57d98917f6da";
-// dialog close icon
-const imgIconClose =
-  "https://www.figma.com/api/mcp/asset/4d365179-df4b-40e0-85ac-ac8e544f226b";
-// analytics chart assets
-const imgChartHorizontalLines =
-  "https://www.figma.com/api/mcp/asset/cd9a157c-65d6-4cec-a0cc-53ccd9ddcf80";
-const imgChartVerticalLines =
-  "https://www.figma.com/api/mcp/asset/91bc9913-11d0-4637-86c3-b2f00ab3b99b";
-const imgChartAreaFill =
-  "https://www.figma.com/api/mcp/asset/5e962a56-bdf3-4c26-bd7f-99f7b0c469fa";
-const imgChartDailyLine =
-  "https://www.figma.com/api/mcp/asset/ae4e3678-502c-4e9c-bb50-8537e57d9a7e";
-const imgChartTotalFill =
-  "https://www.figma.com/api/mcp/asset/18951f09-16c9-4fd5-8878-b528eb37583c";
-const imgChartTotalLine =
-  "https://www.figma.com/api/mcp/asset/19f27dfc-3d57-43c9-8a81-a09c1ae3116c";
-const imgChartToday =
-  "https://www.figma.com/api/mcp/asset/095c7883-d58d-49f2-b6c3-af47b3d405df";
-const imgChartGoal =
-  "https://www.figma.com/api/mcp/asset/92e34e01-e94d-4686-ab33-4de3ba820e48";
-const imgChartLegendDaily =
-  "https://www.figma.com/api/mcp/asset/07311517-dd52-4d91-82f0-ee9dda37612c";
-const imgChartLegendTotal =
-  "https://www.figma.com/api/mcp/asset/b8bfb574-19d7-42ee-b241-380d0b7402d8";
+// ── icons ─────────────────────────────────────────────────────────────────────
+import { IconClose, IconDollar, IconPeople, IconTrendingUp, IconArrowSquareOut, IconCaretDown, IconExternalLink, IconExternalLinkBox, IconLegendStroke } from "@/app/components/Icons";
 
 // ── mock data ─────────────────────────────────────────────────────────────────
 const CAMPAIGNS = [
@@ -106,32 +56,94 @@ const FAQ_ITEMS = [
   },
 ];
 
-const DONORS = Array.from({ length: 10 }, () => ({
-  id: 3640,
-  reward: "No Reward -...",
+const DONORS = Array.from({ length: 10 }, (_, i) => ({
+  id: 3640 + i,
+  contributor: "Robert Anderson",
   amount: "$100.00",
-  contributor: "Robert Ande...",
-  email: "randerson@...",
-  card: "**** **** ***...",
+  email: "randerson@email.com",
+  card: "**** **** **** 1234",
   date: "2025-12-10",
   status: "Success",
 }));
 
-// ── shared footer ─────────────────────────────────────────────────────────────
-function DashboardFooter({ className }: { className?: string }) {
+// ── external link confirmation modal ─────────────────────────────────────────
+function ExternalLinkModal({ url, onClose }: { url: string; onClose: () => void }) {
   return (
-    <div
-      className={`border-t border-[#b5b5b5] flex items-center justify-between pt-6 font-[family-name:var(--font-opensans)] text-[14px] text-[#666] ${className ?? ""}`}
-    >
-      <span>© 2026 SeedMoney All Rights Reserved.</span>
-      <div className="flex gap-6 items-center">
-      <a href="https://donate.seedmoney.org/" className="hover:underline">SeedMoney</a>
-        <a href="https://donate.seedmoney.org/contact" className="hover:underline">Contact</a>
-        <a href="https://donate.seedmoney.org/faq" className="hover:underline">FAQ</a>
-        <a href="https://donate.seedmoney.org/tos" className="hover:underline">Terms</a>
-        <a href="https://donate.seedmoney.org/privacy" className="hover:underline">Privacy Policy</a>
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth
+      PaperProps={{ sx: { borderRadius: "4px", fontFamily: "Lato, sans-serif" } }}>
+      <DialogTitle sx={{ px: 3, py: 2, pb: 1 }}>
+        <span style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 20, color: "#123a1e", lineHeight: "32px" }}>
+          You are about to leave the site
+        </span>
+      </DialogTitle>
+      <DialogContent sx={{ px: 3, pb: 3 }}>
+        <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16, color: "#666", lineHeight: 1.5 }}>
+          The link you have clicked will open a new website in a separate tab. Would you like to proceed?
+        </p>
+      </DialogContent>
+      <DialogActions sx={{ px: 1, py: 1 }}>
+        <button
+          onClick={onClose}
+          style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 14, lineHeight: "16px", textTransform: "uppercase", color: "#666", background: "none", border: "none", cursor: "pointer", padding: "10px 8px", borderRadius: 8 }}
+        >
+          Cancel
+        </button>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 14, lineHeight: "16px", textTransform: "uppercase", color: "white", background: "#2d7a45", border: "none", cursor: "pointer", padding: "10px 14px", borderRadius: 8, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#245f37")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "#2d7a45")}
+        >
+          Proceed
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6.667 3.333H3.333C2.597 3.333 2 3.93 2 4.667v8c0 .736.597 1.333 1.333 1.333h8c.736 0 1.333-.597 1.333-1.333V9.333" stroke="white" strokeWidth="1.333" strokeLinecap="round"/>
+            <path d="M10 2h4m0 0v4M14 2L7.333 8.667" stroke="white" strokeWidth="1.333" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </a>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ── shared footer ─────────────────────────────────────────────────────────────
+const FOOTER_LINKS = [
+  { label: "SeedMoney", href: "https://donate.seedmoney.org/" },
+  { label: "Contact", href: "https://donate.seedmoney.org/contact" },
+  { label: "FAQ", href: "https://donate.seedmoney.org/faq" },
+  { label: "Terms", href: "https://donate.seedmoney.org/tos" },
+  { label: "Privacy Policy", href: "https://donate.seedmoney.org/privacy" },
+];
+
+function DashboardFooter({ className }: { className?: string }) {
+  const [externalUrl, setExternalUrl] = useState<string | null>(null);
+
+  return (
+    <>
+      <div
+        className={`border-t border-[#b5b5b5] pt-6 font-[family-name:var(--font-opensans)] text-[14px] text-[#666] ${className ?? ""}`}
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-6 items-start md:items-center order-1 md:order-2">
+            {FOOTER_LINKS.map(({ label, href }) => (
+              <button
+                key={label}
+                onClick={() => setExternalUrl(href)}
+                className="hover:underline font-[family-name:var(--font-opensans)] text-[14px] text-[#666] bg-transparent border-none cursor-pointer p-0 text-left"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <span className="order-2 md:order-1">© 2026 SeedMoney All Rights Reserved.</span>
+        </div>
       </div>
-    </div>
+      {externalUrl && (
+        <ExternalLinkModal url={externalUrl} onClose={() => setExternalUrl(null)} />
+      )}
+    </>
   );
 }
 
@@ -156,9 +168,9 @@ function NewCampaignModal({
           </p>
           <button
             onClick={onClose}
-            className="size-6 relative flex-shrink-0 hover:opacity-70 transition-opacity"
+            className="size-6 flex-shrink-0 hover:opacity-70 transition-opacity flex items-center justify-center"
           >
-            <Image src={imgIconClose} alt="Close" fill className="object-contain" unoptimized />
+            <IconClose size={24} color="rgba(0,0,0,0.54)" />
           </button>
         </div>
 
@@ -201,59 +213,59 @@ function NewCampaignModal({
 // ── stats cards ───────────────────────────────────────────────────────────────
 function StatsCards() {
   return (
-    <div className="flex gap-4 h-[296px] items-stretch w-full">
+    <div className="flex flex-col md:flex-row gap-4 md:h-[296px] md:items-stretch w-full">
       {/* Total Raised */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col justify-between flex-1 p-px">
-        <div className="flex items-start justify-between pt-6 px-6">
-          <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Raised</p>
-          <div className="relative size-7">
-            <Image src={imgIconDollar} alt="" fill className="object-contain" unoptimized />
-          </div>
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-3 md:gap-0 md:justify-between md:flex-1 p-px">
+        <div className="flex items-start justify-between pt-4 px-4 md:pt-6 md:px-6">
+          <p className="text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Raised</p>
+          <IconDollar size={20} color="#666666" className="md:hidden" />
+          <IconDollar size={28} color="#666666" className="hidden md:block" />
         </div>
-        <div className="px-6">
-          <div className="flex h-[80px] rounded-full overflow-hidden items-center">
+        <div className="px-4 md:px-6">
+          <div className="flex h-10 md:h-[80px] rounded-full overflow-hidden">
             <div className="bg-[#56bd60] flex items-center justify-center h-full w-[20%] shrink-0">
-              <span className="text-white text-[14px]">20%</span>
+              <span className="text-white text-[12px] md:text-[14px]">20%</span>
             </div>
-            <div className="flex-1 h-1 bg-[#56bd60] opacity-30" />
+            <div className="flex-1 h-full relative">
+              <div className="absolute inset-0 bg-[#56bd60]" />
+              <div className="absolute inset-0 bg-white opacity-60" />
+            </div>
           </div>
         </div>
-        <div className="pb-6 px-6 flex flex-col gap-1">
-          <p className="font-bold text-[32px] leading-[1.235] text-[#101828]">$130</p>
+        <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
+          <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">$130</p>
           <div className="flex gap-2 items-center">
-            <p className="flex-1 text-[14px] leading-[1.33] text-[#6a7282]">20% of $1,200 goal</p>
-            <p className="text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
+            <p className="flex-1 text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">20% of $1,200 goal</p>
+            <p className="text-[12px] md:text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
           </div>
         </div>
       </div>
 
       {/* Right column */}
-      <div className="flex flex-col gap-4 flex-1">
+      <div className="flex flex-row md:flex-col gap-4 md:flex-1">
         <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col justify-between flex-1 p-px">
-          <div className="flex items-start justify-between pt-6 px-6">
-            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Donors</p>
-            <div className="relative size-7">
-              <Image src={imgIconPeople} alt="" fill className="object-contain" unoptimized />
-            </div>
+          <div className="flex items-start justify-between pt-4 px-4 md:pt-6 md:px-6">
+            <p className="text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Donors</p>
+            <IconPeople size={20} color="#666666" className="md:hidden" />
+            <IconPeople size={28} color="#666666" className="hidden md:block" />
           </div>
-          <div className="pb-6 px-6 flex flex-col gap-1">
-            <p className="font-bold text-[32px] leading-[1.235] text-[#101828]">12</p>
+          <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
+            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">12</p>
             <div className="flex gap-2 items-center">
-              <p className="flex-1 text-[14px] leading-[1.33] text-[#6a7282]">Donors</p>
-              <p className="text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
+              <p className="flex-1 text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">Donors</p>
+              <p className="hidden md:block text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
             </div>
           </div>
         </div>
         <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col justify-between flex-1 p-px">
-          <div className="flex items-start justify-between pt-6 px-6">
-            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Days Remaining</p>
-            <div className="relative size-7">
-              <Image src={imgIconDays} alt="" fill className="object-contain" unoptimized />
-            </div>
+          <div className="flex items-start justify-between pt-4 px-4 md:pt-6 md:px-6">
+            <p className="text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Days Remaining</p>
+            <IconTrendingUp size={20} color="#666666" className="md:hidden" />
+            <IconTrendingUp size={28} color="#666666" className="hidden md:block" />
           </div>
-          <div className="pb-6 px-6 flex flex-col gap-1">
-            <p className="font-bold text-[32px] leading-[1.235] text-[#101828]">23</p>
-            <p className="text-[14px] leading-[1.33] text-[#6a7282]">days until campaign ends</p>
+          <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
+            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">23</p>
+            <p className="text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">days until campaign ends</p>
           </div>
         </div>
       </div>
@@ -269,21 +281,19 @@ function OverviewTab() {
   const canSubmit = helpTopic !== "" && helpDetail.trim() !== "";
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-4 md:gap-12">
       <StatsCards />
-      <hr className="border-[rgba(0,0,0,0.12)]" />
+      <hr className="hidden md:block border-[rgba(0,0,0,0.12)]" />
 
       {/* FAQ */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-10 p-[25px]">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
         <div className="flex items-end gap-5">
-          <p className="font-bold text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">
+          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">
             Frequently Asked Questions
           </p>
           <button className="flex items-center gap-1 shrink-0">
             <span className="text-[#0288d1] text-[16px] leading-[1.5] underline">View more</span>
-            <div className="relative size-6">
-              <Image src={imgIconArrowOut} alt="" fill className="object-contain" unoptimized />
-            </div>
+            <IconArrowSquareOut size={24} color="#0288d1" />
           </button>
         </div>
         <div className="flex flex-col gap-4">
@@ -300,11 +310,11 @@ function OverviewTab() {
                 >
                   <p className="font-bold text-[16px] leading-[1.5] text-black">{item.q}</p>
                   <div
-                    className={`relative size-6 shrink-0 transition-transform duration-200 ${
+                    className={`shrink-0 transition-transform duration-200 ${
                       isOpen ? "rotate-180" : ""
                     }`}
                   >
-                    <Image src={imgIconCaretDown} alt="" fill className="object-contain" unoptimized />
+                    <IconCaretDown size={24} color="rgba(0,0,0,0.54)" />
                   </div>
                 </button>
                 {isOpen && (
@@ -318,45 +328,44 @@ function OverviewTab() {
         </div>
       </div>
 
-      <hr className="border-[rgba(0,0,0,0.12)]" />
+      <hr className="hidden md:block border-[rgba(0,0,0,0.12)]" />
 
       {/* Need Help */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-10 p-[25px]">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
         <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">Need Help?</p>
-          <p className="text-[16px] leading-[1.5] text-[#666]">
+          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">Need Help?</p>
+          <p className="text-[14px] md:text-[16px] leading-[1.5] text-[#666]">
             Send a request to the SeedMoney team and we&apos;ll get back to you within one business day.
           </p>
         </div>
         <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[16px] leading-[1.5] text-black">What do you need help with?</p>
-          <div className="relative">
-            <select
+          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">What do you need help with?</p>
+          <FormControl variant="standard" fullWidth>
+            <InputLabel sx={{ fontFamily: "Lato, sans-serif" }}>Choose a topic</InputLabel>
+            <Select
               value={helpTopic}
               onChange={(e) => setHelpTopic(e.target.value)}
-              className="w-full text-[16px] leading-[1.5] border-0 border-b border-[rgba(0,0,0,0.42)] bg-transparent pb-[6px] appearance-none focus:border-[#2d7a45] transition-colors text-[rgba(0,0,0,0.38)]"
+              sx={{
+                fontFamily: "Lato, sans-serif",
+                fontSize: 16,
+                "&:after": { borderBottomColor: "#2d7a45" },
+              }}
             >
-              <option value="">Choose a topic</option>
-              <option value="campaign-edit">Request a campaign page edit</option>
-              <option value="stretch-goal">Request a stretch Goal</option>
-              <option value="account-issue">Request an account issue</option>
-              <option value="something-else">Something else</option>
-            </select>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M7 10l5 5 5-5" stroke="rgba(0,0,0,0.54)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
+              <MuiMenuItem value="campaign-edit" sx={{ fontFamily: "Lato, sans-serif" }}>Request a campaign page edit</MuiMenuItem>
+              <MuiMenuItem value="stretch-goal" sx={{ fontFamily: "Lato, sans-serif" }}>Request a stretch goal</MuiMenuItem>
+              <MuiMenuItem value="account-issue" sx={{ fontFamily: "Lato, sans-serif" }}>Request an account issue</MuiMenuItem>
+              <MuiMenuItem value="something-else" sx={{ fontFamily: "Lato, sans-serif" }}>Something else</MuiMenuItem>
+            </Select>
+          </FormControl>
         </div>
         <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[16px] leading-[1.5] text-black">Tell us more</p>
+          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">Tell us more</p>
           <input
             type="text"
             value={helpDetail}
             onChange={(e) => setHelpDetail(e.target.value)}
             placeholder="Describe what you need, the more detail, the faster we can help"
-            className="w-full text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-0 border-b border-[rgba(0,0,0,0.42)] bg-transparent pb-[6px] focus:border-[#2d7a45] transition-colors placeholder:text-[rgba(0,0,0,0.38)]"
+            className="w-full text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-0 border-b border-[rgba(0,0,0,0.42)] bg-transparent pb-[6px] focus:border-[#2d7a45] transition-colors placeholder:text-[rgba(0,0,0,0.38)]"
           />
         </div>
         <button
@@ -375,59 +384,82 @@ function OverviewTab() {
 }
 
 // ── donors tab ────────────────────────────────────────────────────────────────
+type DonorRow = typeof DONORS[0];
+
 function DonorsTab() {
+  const [search, setSearch] = useState("");
+
+  const filtered = DONORS.filter((d) =>
+    Object.values(d).some((v) => String(v).toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const cols: GridColDef<DonorRow>[] = [
+    { field: "id", headerName: "ID", flex: 0.5, minWidth: 70 },
+    { field: "contributor", headerName: "Contributor", flex: 1.5, minWidth: 130 },
+    { field: "amount", headerName: "Amount", flex: 1, minWidth: 90 },
+    { field: "email", headerName: "Contributor Email", flex: 2, minWidth: 160 },
+    { field: "card", headerName: "Card/Reference No.", flex: 1.8, minWidth: 150 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color="success"
+          size="small"
+          variant="outlined"
+          sx={{ fontFamily: "Lato, sans-serif" }}
+        />
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-6">
       <StatsCards />
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-6 flex flex-col gap-4">
-        <div>
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl overflow-hidden">
+        <div className="px-4 pt-6 pb-2">
           <p className="font-bold text-[16px] text-[rgba(0,0,0,0.87)]">Donor List</p>
           <p className="text-[14px] text-[rgba(0,0,0,0.6)]">12 donors</p>
         </div>
-        <input
-          type="text"
-          placeholder="Contributor, Amount, etc..."
-          className="w-full border border-[rgba(0,0,0,0.23)] rounded px-3 py-2 text-[14px] text-[rgba(0,0,0,0.87)] focus:border-[#2d7a45] transition-colors"
+        <div className="px-4 pb-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search contributor, amount, etc..."
+            style={{
+              width: "100%",
+              border: "1px solid rgba(0,0,0,0.23)",
+              borderRadius: 4,
+              padding: "8px 14px",
+              fontSize: 14,
+              fontFamily: "Lato, sans-serif",
+              outline: "none",
+            }}
+          />
+        </div>
+        <DataGrid
+          rows={filtered}
+          columns={cols}
+          autoHeight
+          pageSizeOptions={[10, 25, 50]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+          disableRowSelectionOnClick
+          sx={{
+            border: "none",
+            fontFamily: "Lato, sans-serif",
+            "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 700, fontFamily: "Lato, sans-serif" },
+            "& .MuiDataGrid-cell": { fontFamily: "Lato, sans-serif" },
+            "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+              fontFamily: "Lato, sans-serif",
+            },
+          }}
         />
-        <div className="overflow-x-auto">
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="border-b border-[rgba(0,0,0,0.12)]">
-                {["ID", "Reward", "Amount", "Contributor", "Email", "Card", "Date", "Status"].map((h) => (
-                  <th key={h} className="text-left py-3 px-2 font-bold text-[rgba(0,0,0,0.87)] whitespace-nowrap">
-                    {h} ↓
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {DONORS.map((d, i) => (
-                <tr key={i} className="border-b border-[rgba(0,0,0,0.06)] hover:bg-gray-50">
-                  <td className="py-3 px-2">{d.id}</td>
-                  <td className="py-3 px-2 text-[rgba(0,0,0,0.6)]">{d.reward}</td>
-                  <td className="py-3 px-2">{d.amount}</td>
-                  <td className="py-3 px-2 text-[rgba(0,0,0,0.6)]">{d.contributor}</td>
-                  <td className="py-3 px-2 text-[rgba(0,0,0,0.6)]">{d.email}</td>
-                  <td className="py-3 px-2 text-[rgba(0,0,0,0.6)]">{d.card}</td>
-                  <td className="py-3 px-2">{d.date}</td>
-                  <td className="py-3 px-2">
-                    <span className="border border-[#00a63e] text-[#00a63e] text-[12px] px-2 py-0.5 rounded-full">
-                      {d.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex items-center justify-end gap-4 text-[14px] text-[rgba(0,0,0,0.6)]">
-          <span>Rows per page: 10 ▾</span>
-          <span>1-5 of 13</span>
-          <button className="hover:text-[rgba(0,0,0,0.87)]">{"<"}</button>
-          <button className="hover:text-[rgba(0,0,0,0.87)]">{">"}</button>
-        </div>
       </div>
-      <button className="self-start bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors">
+      <button className="self-start bg-[#2d7a45] text-white font-bold text-[16px] leading-[26px] px-[20px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors">
         Export to CSV
       </button>
     </div>
@@ -452,23 +484,39 @@ const TOTAL_EARNINGS: (number | null)[] = [..._total, ...NULL_TAIL];
 const xTickInterval = (_: string, i: number) => i % 5 === 0;
 
 function AnalyticsTab() {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(0);
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    // Read the layout width (overflow-hidden ensures SVG can't inflate this)
+    const observer = new ResizeObserver(() => {
+      setChartWidth(el.getBoundingClientRect().width);
+    });
+    observer.observe(el);
+    // Measure immediately after mount
+    setChartWidth(el.getBoundingClientRect().width);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
       <StatsCards />
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 px-[25px] py-6 w-full">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 px-4 md:px-[25px] py-6 w-full">
         {/* Header: title + custom legend */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-2">
           <div className="flex flex-col">
             <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Earnings Trend</p>
             <p className="text-[14px] leading-[1.33] text-[#6a7282]">Your earnings over the campaign</p>
           </div>
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 items-center">
             <div className="flex gap-2 items-center">
-              <svg width="20" height="4" viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" stroke="#00a87e" strokeWidth="3" strokeLinecap="round"/></svg>
+              <IconLegendStroke width={20} color="#00a87e" />
               <span className="text-[14px] text-[#717182]">Daily Earnings</span>
             </div>
             <div className="flex gap-2 items-center">
-              <svg width="20" height="4" viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" stroke="#5c6bc0" strokeWidth="3" strokeLinecap="round"/></svg>
+              <IconLegendStroke width={20} color="#5c6bc0" />
               <span className="text-[14px] text-[#717182]">Total Earnings</span>
             </div>
           </div>
@@ -478,10 +526,11 @@ function AnalyticsTab() {
         <style>{`.MuiChartsTooltip-root, .MuiChartsTooltip-root * { font-family: Lato, sans-serif !important; }`}</style>
 
         {/* Chart with overlaid goal badge */}
-        <div className="relative">
+        <div className="relative w-full overflow-hidden" ref={chartRef}>
           <LineChart
+            width={chartWidth || undefined}
             height={320}
-            margin={{ top: 20, bottom: 30, left: 55, right: 20 }}
+            margin={{ top: 20, bottom: 30, left: 45, right: 16 }}
             series={[
               {
                 id: "daily",
@@ -568,9 +617,7 @@ function DraftState({ title, onContinue }: { title: string; onContinue: () => vo
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{displayTitle}</p>
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
-        <div className="border-[2.1px] border-[#00a63e] rounded-full size-20 flex items-center justify-center relative overflow-hidden">
-          <Image src={imgAvatar} alt="" fill className="object-cover object-left scale-[4]" unoptimized />
-        </div>
+        <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center max-w-[525px]">
           Your application haven&apos;t been submitted
         </p>
@@ -597,9 +644,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#096b2e]">Dashboard</p>
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
-        <div className="border-[2.1px] border-[#00a63e] rounded-full size-20 flex items-center justify-center relative overflow-hidden">
-          <Image src={imgAvatar} alt="" fill className="object-cover object-left scale-[4]" unoptimized />
-        </div>
+        <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center">No campaigns created</p>
         <p className="text-[16px] leading-[1.5] text-[#666] text-center max-w-md">
           Create your first campaign to start sharing your story and receiving support.
@@ -628,9 +673,7 @@ function ReviewState({ campaignName }: { campaignName: string }) {
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
-        <div className="border-[2.1px] border-[#00a63e] rounded-full size-20 flex items-center justify-center relative overflow-hidden">
-          <Image src={imgAvatar} alt="" fill className="object-cover object-left scale-[4]" unoptimized />
-        </div>
+        <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center">
           Your campaign is under reviewed
         </p>
@@ -664,8 +707,8 @@ function ActiveState({
 
   return (
     <div className="flex flex-col gap-4 flex-1">
-      <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
-      <div className="flex items-center border-b border-[rgba(0,0,0,0.12)]">
+      <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
+      <div className="flex items-center border-b border-[rgba(0,0,0,0.12)] overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -680,7 +723,43 @@ function ActiveState({
           </button>
         ))}
       </div>
-      <div className="flex gap-4 items-center flex-wrap">
+      {/* Mobile buttons — no icons, horizontal scroll, Share uses native share */}
+      <div className="flex md:hidden flex-nowrap gap-4 items-center overflow-x-auto no-scrollbar">
+        <a
+          href="https://donate.seedmoney.org/13865/full-belly-community-garden"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 bg-[#2d7a45] text-white font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors whitespace-nowrap"
+        >
+          View Campaign
+        </a>
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: "SeedMoney Campaign",
+                url: "https://donate.seedmoney.org/13865/full-belly-community-garden",
+              });
+            } else {
+              onCopyLink();
+            }
+          }}
+          className="shrink-0 bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[9px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors whitespace-nowrap"
+        >
+          Share Campaign
+        </button>
+        <a
+          href="https://donate.seedmoney.org/explore"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[9px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors whitespace-nowrap"
+        >
+          Leaderboard
+        </a>
+      </div>
+
+      {/* Desktop buttons — with icons, wraps */}
+      <div className="hidden md:flex flex-wrap gap-4 items-center">
         <a
           href="https://donate.seedmoney.org/13865/full-belly-community-garden"
           target="_blank"
@@ -688,13 +767,11 @@ function ActiveState({
           className="bg-[#2d7a45] text-white font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors flex items-center gap-1"
         >
           View Campaign
-          <div className="relative size-4 shrink-0">
-            <Image src={imgIconExternalLinkWhite} alt="" fill className="object-contain" unoptimized />
-          </div>
+          <IconExternalLink size={16} color="white" />
         </a>
         <button
           onClick={onCopyLink}
-          className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors"
+          className="bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[9px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors"
         >
           Copy Campaign Link
         </button>
@@ -702,12 +779,10 @@ function ActiveState({
           href="https://donate.seedmoney.org/explore"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors flex items-center gap-1"
+          className="bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[9px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors flex items-center gap-[4px]"
         >
           View Leaderboard
-          <div className="relative size-4 shrink-0">
-            <Image src={imgIconExternalLinkGreen} alt="" fill className="object-contain" unoptimized />
-          </div>
+          <IconExternalLinkBox size={16} color="#123a1e" className="shrink-0" />
         </a>
       </div>
       {activeTab === "overview" && <OverviewTab />}
@@ -717,6 +792,226 @@ function ActiveState({
         <DashboardFooter />
       </div>
     </div>
+  );
+}
+
+// ── settings modal ────────────────────────────────────────────────────────────
+type SettingsStep =
+  | "main" | "edit-name" | "edit-email"
+  | "verify-email-for-email" | "code-for-email" | "confirm-new-email"
+  | "verify-email-for-password" | "code-for-password";
+
+function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [step, setStep] = useState<SettingsStep>("main");
+  const [firstName, setFirstName] = useState("John");
+  const [lastName, setLastName] = useState("Smith");
+  const [newEmail, setNewEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [showCodeResent, setShowCodeResent] = useState(false);
+  const CURRENT_EMAIL = "johnsmith@gmail.com";
+
+  function handleClose() {
+    setStep("main");
+    setNewEmail("");
+    setVerificationCode("");
+    onClose();
+  }
+
+  function goToMain() {
+    setStep("main");
+    setNewEmail("");
+    setVerificationCode("");
+  }
+
+  function handleSendVerification() {
+    setShowCodeResent(true);
+    if (step === "verify-email-for-email") setStep("code-for-email");
+    else setStep("code-for-password");
+  }
+
+  const nameChanged = firstName !== "John" || lastName !== "Smith";
+  const canNextEmail = newEmail.trim().length > 0;
+  const canNextCode = verificationCode.trim().length > 0;
+
+  const stepTitles: Record<SettingsStep, string> = {
+    "main": "Settings",
+    "edit-name": "Change Name",
+    "edit-email": "Change Email",
+    "verify-email-for-email": "Verify Email",
+    "code-for-email": "Verify Email",
+    "confirm-new-email": "Confirm New Email",
+    "verify-email-for-password": "Verify Email",
+    "code-for-password": "Verify Email",
+  };
+
+  const cancelSty: CSSProperties = {
+    fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 14, lineHeight: "16px",
+    textTransform: "uppercase", color: "#666", background: "none", border: "none",
+    cursor: "pointer", padding: "10px 8px", borderRadius: 8,
+  };
+
+  function primarySty(enabled: boolean): CSSProperties {
+    return {
+      fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 14, lineHeight: "16px",
+      textTransform: "uppercase", color: enabled ? "white" : "#a6a6a6",
+      background: enabled ? "#2d7a45" : "#e0e0e0", border: "none",
+      cursor: enabled ? "pointer" : "not-allowed", padding: "10px 14px", borderRadius: 8,
+    };
+  }
+
+  return (
+    <>
+      <Dialog open={open} onClose={undefined} maxWidth="sm" fullWidth
+        PaperProps={{ sx: { borderRadius: "4px", fontFamily: "Lato, sans-serif" } }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 3, py: 2 }}>
+          <span style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 20, color: "#123a1e", lineHeight: "32px" }}>
+            {stepTitles[step]}
+          </span>
+          <MuiIconButton onClick={step === "main" ? handleClose : goToMain} size="small" sx={{ color: "rgba(0,0,0,0.54)" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </MuiIconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ px: 3, pt: 1, pb: 1 }}>
+          {step === "main" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { label: "Name", value: `${firstName} ${lastName}`, onClick: () => setStep("edit-name") },
+                { label: "Email", value: CURRENT_EMAIL, onClick: () => setStep("edit-email") },
+                { label: "Password", value: "***********************", onClick: () => setStep("verify-email-for-password") },
+              ].map(({ label, value, onClick }) => (
+                <div key={label}>
+                  <p style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 16, color: "#000", marginBottom: 4 }}>{label}</p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 36 }}>
+                    <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16, color: "#666", flex: 1 }}>{value}</p>
+                    <button
+                      onClick={onClick}
+                      style={{ fontFamily: "Lato, sans-serif", fontWeight: 700, fontSize: 14, color: "#123a1e", border: "1px solid #123a1e", borderRadius: 8, padding: "9px 14px", background: "white", cursor: "pointer", textTransform: "uppercase", lineHeight: "16px" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f7f1")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
+                    >Edit</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {step === "edit-name" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 4, paddingBottom: 4 }}>
+              <TextField label="First Name" variant="outlined" fullWidth value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                sx={{ "& *": { fontFamily: "Lato, sans-serif" } }} />
+              <TextField label="Last Name" variant="outlined" fullWidth value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                sx={{ "& *": { fontFamily: "Lato, sans-serif" } }} />
+            </div>
+          )}
+
+          {step === "edit-email" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 15, paddingTop: 20, paddingBottom: 20 }}>
+              <TextField label="Current Email" variant="outlined" fullWidth value={CURRENT_EMAIL} disabled
+                sx={{ "& *": { fontFamily: "Lato, sans-serif" } }} />
+              <TextField label="New Email" variant="outlined" fullWidth value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="New email address"
+                sx={{ "& *": { fontFamily: "Lato, sans-serif" } }} />
+            </div>
+          )}
+
+          {(step === "verify-email-for-email" || step === "verify-email-for-password") && (
+            <div style={{ fontFamily: "Lato, sans-serif", fontSize: 16, color: "#000", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 20 }}>
+              <p>
+                {step === "verify-email-for-email"
+                  ? `Please verify your old email ${CURRENT_EMAIL} before changing to your new email.`
+                  : `Please verify your email ${CURRENT_EMAIL} before changing your password.`}
+              </p>
+              <p>We&apos;ll send a verification code to your email.</p>
+            </div>
+          )}
+
+          {(step === "code-for-email" || step === "code-for-password") && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 25, paddingBottom: 20 }}>
+              <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16, color: "#000" }}>
+                A code has been sent to your email {CURRENT_EMAIL}.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <TextField label="Enter Verification Code" variant="outlined" fullWidth
+                  value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)}
+                  sx={{ "& *": { fontFamily: "Lato, sans-serif" } }} />
+                <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16 }}>
+                  <span style={{ color: "#666" }}>Link expired or didn&apos;t receive it? </span>
+                  <button onClick={() => setShowCodeResent(true)}
+                    style={{ color: "#0288d1", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "Lato, sans-serif", fontSize: 16, padding: 0 }}>
+                    Resend
+                  </button>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === "confirm-new-email" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 20 }}>
+              <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16, color: "#000" }}>
+                To complete your email change, verify your new address. We&apos;ve sent a confirmation link to {newEmail || "your new email"}.
+              </p>
+              <p style={{ fontFamily: "Lato, sans-serif", fontSize: 16 }}>
+                <span style={{ color: "#666" }}>Didn&apos;t receive it? </span>
+                <button onClick={() => setShowCodeResent(true)}
+                  style={{ color: "#0288d1", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "Lato, sans-serif", fontSize: 16, padding: 0 }}>
+                  Resend
+                </button>
+              </p>
+            </div>
+          )}
+        </DialogContent>
+
+        {step !== "main" && step !== "confirm-new-email" && (
+          <DialogActions sx={{ px: 1, py: 1 }}>
+            <button onClick={goToMain} style={cancelSty}>Cancel</button>
+            {step === "edit-name" && (
+              <button onClick={nameChanged ? goToMain : undefined} disabled={!nameChanged}
+                style={primarySty(nameChanged)}>Save</button>
+            )}
+            {step === "edit-email" && (
+              <button onClick={canNextEmail ? () => setStep("verify-email-for-email") : undefined}
+                disabled={!canNextEmail} style={primarySty(canNextEmail)}>Next</button>
+            )}
+            {(step === "verify-email-for-email" || step === "verify-email-for-password") && (
+              <button onClick={handleSendVerification} style={primarySty(true)}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#245f37")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#2d7a45")}>
+                Send Verification Email
+              </button>
+            )}
+            {step === "code-for-email" && (
+              <button
+                onClick={canNextCode ? () => { setVerificationCode(""); setStep("confirm-new-email"); } : undefined}
+                disabled={!canNextCode} style={primarySty(canNextCode)}>Next</button>
+            )}
+            {step === "code-for-password" && (
+              <button onClick={canNextCode ? handleClose : undefined}
+                disabled={!canNextCode} style={primarySty(canNextCode)}>Next</button>
+            )}
+          </DialogActions>
+        )}
+      </Dialog>
+
+      <Snackbar
+        open={showCodeResent}
+        autoHideDuration={3000}
+        onClose={() => setShowCodeResent(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        TransitionComponent={SlideLeft}
+        TransitionProps={{ style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" } }}
+      >
+        <MuiAlert severity="success" onClose={() => setShowCodeResent(false)}
+          sx={{ backgroundColor: "#edf7ed", color: "#1e4620", fontFamily: "Lato, sans-serif", "& .MuiAlert-icon": { color: "#2e7d32" }, "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" } }}>
+          Code Resent!
+        </MuiAlert>
+      </Snackbar>
+    </>
   );
 }
 
@@ -738,6 +1033,8 @@ function DashboardContent() {
   const [selectedNav, setSelectedNav] = useState<SelectedNav>(null);
   const [selectedActiveIdx, setSelectedActiveIdx] = useState<number>(0);
   const [showCopied, setShowCopied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     // Check if we arrived here from a form submit (flag set by application/page.tsx)
@@ -824,15 +1121,18 @@ function DashboardContent() {
           pendingCampaigns={state === "active" ? [] : pendingCampaigns}
           draftTitle={state === "active" ? null : draftTitle}
           selectedNav={state === "active" ? null : selectedNav}
-          onSelectPending={(idx) => setSelectedNav({ type: "pending", idx })}
-          onSelectDraft={() => setSelectedNav({ type: "draft" })}
+          onSelectPending={(idx) => { setSelectedNav({ type: "pending", idx }); setMobileNavOpen(false); }}
+          onSelectDraft={() => { setSelectedNav({ type: "draft" }); setMobileNavOpen(false); }}
           onNewCampaign={handleNewCampaign}
+          onSettings={() => setShowSettings(true)}
           onLogout={handleLogout}
           activeCampaigns={state === "active" ? ["Save the Ocean Campaign"] : []}
           selectedActiveIdx={state === "active" ? selectedActiveIdx : undefined}
           onSelectActive={setSelectedActiveIdx}
+          mobileOpen={mobileNavOpen}
+          onMobileClose={() => setMobileNavOpen(false)}
         />
-        <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-10 pt-[60px] pb-5">
+        <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-4 md:px-10 pt-[60px] pb-[60px] md:pb-5">
           {state === "active" && (
             <ActiveState
               campaignName="Save the Ocean Campaign"
@@ -854,6 +1154,19 @@ function DashboardContent() {
             <EmptyState onNew={handleNewCampaign} />
           )}
         </div>
+
+        {/* Floating hamburger button — mobile only */}
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          className="fixed bottom-6 right-6 z-30 md:hidden bg-white border border-[#123a1e] rounded-full size-16 flex items-center justify-center shadow-[0px_1px_8px_0px_rgba(0,0,0,0.12),0px_3px_4px_0px_rgba(0,0,0,0.14),0px_3px_3px_-2px_rgba(0,0,0,0.2)] hover:bg-[#f0f7f1] transition-colors"
+          aria-label="Open navigation"
+        >
+          <svg width="24" height="18" viewBox="0 0 24 18" fill="none">
+            <path d="M0 1.5C0 0.672 0.672 0 1.5 0h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 1.5Z" fill="#2d7a45"/>
+            <path d="M0 9C0 8.172 0.672 7.5 1.5 7.5h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 9Z" fill="#2d7a45"/>
+            <path d="M0 16.5C0 15.672 0.672 15 1.5 15h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 16.5Z" fill="#2d7a45"/>
+          </svg>
+        </button>
       </div>
 
       {showModal && (
@@ -862,6 +1175,8 @@ function DashboardContent() {
           onStart={handleStartApplication}
         />
       )}
+
+      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
       <Snackbar
         open={showCopied}

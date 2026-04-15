@@ -12,6 +12,7 @@
   --color-disable-surface: #e0e0e0;
   --color-disable-text: #a6a6a6;
   --color-card-border: rgba(0, 0, 0, 0.1);
+  --color-error: #D32F2F;
 }
 
 *, *::before, *::after {
@@ -36,4 +37,37 @@ input[type="password"],
 input[type="number"],
 textarea {
   outline: none;
+}
+
+/* Mobile nav sheet slide-up animation */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Typography: p2 — body small */
+@layer components {
+  .p2 {
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
+    line-height: 1.33;
+    font-size: 12px; /* mobile */
+  }
+  @media (min-width: 768px) {
+    .p2 {
+      font-size: 14px; /* desktop */
+    }
+  }
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,25 +1,8 @@
 "use client";
 
-import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-// ── icon assets ───────────────────────────────────────────────────────────────
-const imgAvatar =
-  "https://www.figma.com/api/mcp/asset/a99ed0bb-5887-47ce-a031-8877365c9cfb";
-const imgIconPlusExpanded =
-  "https://www.figma.com/api/mcp/asset/cebfd962-7862-4f3d-a6a8-660175f45cbb";
-const imgIconPlusCollapsed =
-  "https://www.figma.com/api/mcp/asset/2e4b306b-cbed-487e-8d17-76e18314a513";
-const imgIconSettings =
-  "https://www.figma.com/api/mcp/asset/c38ba6d5-69d8-42f0-babc-1ad9b9b72461";
-const imgIconLogout =
-  "https://www.figma.com/api/mcp/asset/6033bc7f-a19b-4928-ab6b-499b7343012c";
-const imgIconLogoutCollapsed =
-  "https://www.figma.com/api/mcp/asset/bbd7c7c7-02cc-4905-b4e8-c853db851445";
-const imgIconCollapseLeft =
-  "https://www.figma.com/api/mcp/asset/8371b03c-eae1-4053-8d41-f4587501d654";
-const imgIconExpandRight =
-  "https://www.figma.com/api/mcp/asset/16b1db03-fce3-4e6d-97a2-4b2a6c94c29b";
+import { IconSettings, IconLogout, IconChevronLeft, IconChevronRight } from "@/app/components/Icons";
 
 // ── types ─────────────────────────────────────────────────────────────────────
 export type SelectedNav =
@@ -36,11 +19,14 @@ export interface SidebarProps {
   onSelectPending: (idx: number) => void;
   onSelectDraft: () => void;
   onNewCampaign: () => void;
+  onSettings?: () => void;
   onLogout: () => void;
   disableNewCampaign?: boolean;
   activeCampaigns?: string[];
   selectedActiveIdx?: number;
   onSelectActive?: (idx: number) => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 // ── component ─────────────────────────────────────────────────────────────────
@@ -53,20 +39,139 @@ export function Sidebar({
   onSelectPending,
   onSelectDraft,
   onNewCampaign,
+  onSettings,
   onLogout,
   disableNewCampaign = false,
   activeCampaigns = [],
   selectedActiveIdx,
   onSelectActive,
+  mobileOpen = false,
+  onMobileClose,
 }: SidebarProps) {
   const router = useRouter();
+  const [showSettings, setShowSettings] = useState(false);
   const hasDraft = draftTitle != null;
   const draftLabel = (draftTitle?.trim() || "Untitled") + " (Draft)";
   const isNewCampaignDisabled = disableNewCampaign || hasDraft;
 
   return (
+    <>
+    {/* ── Mobile bottom-sheet nav ── */}
+    {mobileOpen && (
+      <>
+        {/* Backdrop — tap to close */}
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={onMobileClose}
+        />
+        {/* Sheet — slides up from the bottom */}
+        <div className="animate-slide-up fixed bottom-0 left-0 right-0 z-50 bg-[#2d7a45] rounded-tl-[24px] rounded-tr-[24px] flex flex-col md:hidden max-h-[72vh] overflow-y-auto">
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-white/40" />
+          </div>
+
+          {/* Profile */}
+          <div className="flex items-center gap-4 p-6 shrink-0">
+            <button
+              onClick={() => { router.push("/dashboard"); onMobileClose?.(); }}
+              className="bg-white rounded-full size-[48px] shrink-0 overflow-hidden hover:opacity-90 transition-opacity flex items-center justify-center"
+            >
+              <img src="/seedmoney-logo.png" alt="SeedMoney" className="size-full object-contain p-1.5" />
+            </button>
+            <div className="flex flex-col items-start overflow-hidden">
+              <p className="font-bold text-[20px] leading-[1.334] text-white whitespace-nowrap">John Doe</p>
+              <p className="text-[14px] leading-[1.5] text-white/70 whitespace-nowrap">Campaign Leader</p>
+            </div>
+          </div>
+
+          {/* Campaign list */}
+          <div className="flex flex-col items-start w-full">
+            <div className="flex items-center pb-[6px] px-6 w-full">
+              <p className="text-[16px] leading-[1.5] text-white/90">2026 Campaign</p>
+            </div>
+            {activeCampaigns.map((name, idx) => (
+              <button
+                key={`m-active-${idx}`}
+                onClick={() => { onSelectActive?.(idx); onMobileClose?.(); }}
+                className={`flex items-center px-8 py-6 w-full text-left transition-colors ${
+                  selectedActiveIdx === idx ? "bg-[#123a1e]" : "hover:bg-[#245f37]"
+                }`}
+              >
+                <p className="font-bold text-[20px] leading-[1.334] text-white">{name}</p>
+              </button>
+            ))}
+            {pendingCampaigns.map((pc, idx) => (
+              <button
+                key={`m-pending-${idx}`}
+                onClick={() => { onSelectPending(idx); onMobileClose?.(); }}
+                className={`flex items-center px-8 py-6 w-full text-left transition-colors ${
+                  selectedNav?.type === "pending" && selectedNav.idx === idx
+                    ? "bg-[#123a1e]" : "hover:bg-[#245f37]"
+                }`}
+              >
+                <p className="font-bold text-[20px] leading-[1.334] text-white">
+                  {(pc.title.trim() || "Untitled") + " (Pending)"}
+                </p>
+              </button>
+            ))}
+            {hasDraft && (
+              <button
+                onClick={() => { onSelectDraft(); onMobileClose?.(); }}
+                className={`flex items-center px-8 py-6 w-full text-left transition-colors ${
+                  selectedNav?.type === "draft" ? "bg-[#123a1e]" : "hover:bg-[#245f37]"
+                }`}
+              >
+                <p className="font-bold text-[20px] leading-[1.334] text-white">{draftLabel}</p>
+              </button>
+            )}
+          </div>
+
+          {/* Bottom actions */}
+          <div className="flex flex-col gap-2 w-full px-6 py-4 shrink-0">
+            {/* New Campaign */}
+            <button
+              onClick={isNewCampaignDisabled ? undefined : () => { onNewCampaign(); onMobileClose?.(); }}
+              disabled={isNewCampaignDisabled}
+              className={`flex items-center gap-2 justify-center px-[26px] py-3 rounded-[8px] w-full transition-colors ${
+                isNewCampaignDisabled
+                  ? "bg-white cursor-not-allowed"
+                  : "bg-white hover:bg-[#f0f7f1]"
+              }`}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                <path d="M12 5v14M5 12h14" stroke={isNewCampaignDisabled ? "#a6a6a6" : "#123a1e"} strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className={`font-bold text-[20px] leading-[1.5] uppercase whitespace-nowrap ${
+                isNewCampaignDisabled ? "text-[#a6a6a6]" : "text-[#123a1e]"
+              }`}>New Campaign</span>
+            </button>
+
+            {/* Settings + Log out — side by side */}
+            <div className="flex gap-2 items-start w-full">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="flex flex-1 items-center gap-2 px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors"
+              >
+                <IconSettings size={32} color="white" className="shrink-0" />
+                <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">Settings</span>
+              </button>
+              <button
+                onClick={onLogout}
+                className="flex flex-1 items-center gap-2 px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors"
+              >
+                <IconLogout size={20} color="white" className="shrink-0" />
+                <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">Log Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* ── Desktop sidebar ── */}
     <div
-      className={`bg-[#2d7a45] flex flex-col h-full items-center justify-between shrink-0 relative transition-all duration-200 ${
+      className={`hidden md:flex bg-[#2d7a45] flex-col h-full items-center justify-between shrink-0 relative transition-all duration-200 ${
         collapsed ? "w-[105px]" : "w-[280px]"
       }`}
     >
@@ -80,15 +185,9 @@ export function Sidebar({
         >
           <button
             onClick={() => router.push("/dashboard")}
-            className="bg-white rounded-full size-[60px] shrink-0 relative overflow-hidden hover:opacity-90 transition-opacity"
+            className="bg-white rounded-full size-[60px] shrink-0 overflow-hidden hover:opacity-90 transition-opacity flex items-center justify-center"
           >
-            <Image
-              src={imgAvatar}
-              alt="Go to dashboard"
-              fill
-              className="object-cover object-left"
-              unoptimized
-            />
+            <img src="/seedmoney-logo.png" alt="SeedMoney" className="size-full object-contain p-2" />
           </button>
           {!collapsed && (
             <div className="flex flex-col items-start overflow-hidden">
@@ -205,28 +304,18 @@ export function Sidebar({
                   : "bg-white hover:bg-gray-50"
               }`}
             >
-              {isNewCampaignDisabled ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <div className="relative size-6 shrink-0">
-                  <Image src={imgIconPlusCollapsed} alt="New Campaign" fill className="object-contain" unoptimized />
-                </div>
-              )}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                <path d="M12 5v14M5 12h14" stroke={isNewCampaignDisabled ? "#a6a6a6" : "#123a1e"} strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
-            <button className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]">
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconSettings} alt="Settings" fill className="object-contain" unoptimized />
-              </div>
+            <button onClick={onSettings} className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]">
+              <IconSettings size={20} color="white" />
             </button>
             <button
               onClick={onLogout}
               className="flex items-center justify-center py-[10px] w-full hover:bg-white/10 transition-colors rounded-[8px]"
             >
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconLogoutCollapsed} alt="Log Out" fill className="object-contain" unoptimized />
-              </div>
+              <IconLogout size={20} color="white" />
             </button>
           </>
         ) : (
@@ -237,30 +326,22 @@ export function Sidebar({
               className={`border rounded-[8px] flex items-center gap-2 justify-center px-[26px] py-3 w-full transition-colors ${
                 isNewCampaignDisabled
                   ? "bg-white border-[#a6a6a6] cursor-not-allowed"
-                  : "bg-white border-[#2d7a45] hover:bg-gray-50"
+                  : "bg-white border-[#123a1e] hover:bg-[#f0f7f1]"
               }`}
             >
-              {isNewCampaignDisabled ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                  <path d="M12 5v14M5 12h14" stroke="#a6a6a6" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <div className="relative size-6 shrink-0">
-                  <Image src={imgIconPlusExpanded} alt="" fill className="object-contain" unoptimized />
-                </div>
-              )}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                <path d="M12 5v14M5 12h14" stroke={isNewCampaignDisabled ? "#a6a6a6" : "#123a1e"} strokeWidth="2" strokeLinecap="round" />
+              </svg>
               <span
                 className={`font-bold text-[20px] leading-[1.5] uppercase whitespace-nowrap ${
-                  isNewCampaignDisabled ? "text-[#a6a6a6]" : "text-[#2d7a45]"
+                  isNewCampaignDisabled ? "text-[#a6a6a6]" : "text-[#123a1e]"
                 }`}
               >
                 New Campaign
               </span>
             </button>
-            <button className="flex items-center gap-2 px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors">
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconSettings} alt="" fill className="object-contain" unoptimized />
-              </div>
+            <button onClick={onSettings} className="flex items-center gap-2 px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors">
+              <IconSettings size={20} color="white" className="shrink-0" />
               <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
                 Settings
               </span>
@@ -269,9 +350,7 @@ export function Sidebar({
               onClick={onLogout}
               className="flex items-center gap-2 px-2 py-[10px] rounded-[8px] hover:bg-white/10 transition-colors"
             >
-              <div className="relative size-5 shrink-0">
-                <Image src={imgIconLogout} alt="" fill className="object-contain" unoptimized />
-              </div>
+              <IconLogout size={20} color="white" className="shrink-0" />
               <span className="font-bold text-[16px] leading-[26px] text-white uppercase whitespace-nowrap">
                 Log Out
               </span>
@@ -287,16 +366,80 @@ export function Sidebar({
           collapsed ? "-right-[24px]" : "-right-[25px]"
         }`}
       >
-        <div className="relative size-[27px]">
-          <Image
-            src={collapsed ? imgIconExpandRight : imgIconCollapseLeft}
-            alt={collapsed ? "Expand" : "Collapse"}
-            fill
-            className="object-contain"
-            unoptimized
-          />
-        </div>
+        {collapsed ? (
+          <IconChevronRight size={27} color="#2d7a45" />
+        ) : (
+          <IconChevronLeft size={27} color="#2d7a45" />
+        )}
       </button>
     </div>
+
+    {/* ── Settings overlay (mobile) ── */}
+    {showSettings && (
+      <>
+        {/* Dim backdrop — sits above the nav sheet (z-50) but below the dialog */}
+        <div
+          className="fixed inset-0 z-[60] bg-black/10"
+          onClick={() => setShowSettings(false)}
+        />
+        {/* Dialog card */}
+        <div className="fixed inset-0 z-[61] flex items-center justify-center px-4 pointer-events-none">
+          <div
+            className="pointer-events-auto bg-white rounded-[4px] w-full max-w-[400px] shadow-[0px_11px_15px_-7px_rgba(0,0,0,0.20),0px_24px_38px_3px_rgba(0,0,0,0.14),0px_9px_46px_8px_rgba(0,0,0,0.12)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-black/10">
+              <span className="font-bold text-[20px] leading-[1.334] text-[#123a1e]">Settings</span>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="flex items-center justify-center size-8 rounded-full hover:bg-black/5 transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M15 5L5 15M5 5l10 10" stroke="#123a1e" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Rows */}
+            <div className="flex flex-col divide-y divide-black/10">
+              {/* Name */}
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[12px] leading-[1.5] text-[#666666] uppercase tracking-wide">Name</span>
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">John Doe</span>
+                </div>
+                <button className="border border-[#123a1e] rounded-[4px] px-4 py-1.5 bg-white hover:bg-[#f0f7f1] transition-colors">
+                  <span className="font-bold text-[14px] leading-[1.5] text-[#123a1e] uppercase">Edit</span>
+                </button>
+              </div>
+
+              {/* Email */}
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[12px] leading-[1.5] text-[#666666] uppercase tracking-wide">Email</span>
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">johndoe@email.com</span>
+                </div>
+                <button className="border border-[#123a1e] rounded-[4px] px-4 py-1.5 bg-white hover:bg-[#f0f7f1] transition-colors">
+                  <span className="font-bold text-[14px] leading-[1.5] text-[#123a1e] uppercase">Edit</span>
+                </button>
+              </div>
+
+              {/* Password */}
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[12px] leading-[1.5] text-[#666666] uppercase tracking-wide">Password</span>
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-widest">••••••••</span>
+                </div>
+                <button className="border border-[#123a1e] rounded-[4px] px-4 py-1.5 bg-white hover:bg-[#f0f7f1] transition-colors">
+                  <span className="font-bold text-[14px] leading-[1.5] text-[#123a1e] uppercase">Edit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )}
+    </>
   );
 }

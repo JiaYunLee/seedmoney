@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Sidebar } from "@/app/components/Sidebar";
 import Image from "next/image";
+import { IconUpload, IconErrorOutline, IconPencil, StepDot, getDotState } from "@/app/components/Icons";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
@@ -22,35 +23,6 @@ const fieldSx = {
   "& .MuiInputLabel-root.Mui-focused": { color: "#2d7a45" },
 } as const;
 
-// ── icon assets ──────────────────────────────────────────────────────────────
-const imgAvatar =
-  "https://www.figma.com/api/mcp/asset/d187743d-15a6-4e9e-a751-3f14ed9902fd";
-const imgIconPlus =
-  "https://www.figma.com/api/mcp/asset/2b7e1dab-f4c4-4e76-9fb9-799f0561d991";
-const imgIconSettings =
-  "https://www.figma.com/api/mcp/asset/82479ffb-191c-462d-afb6-adf43d036cc3";
-const imgIconLogout =
-  "https://www.figma.com/api/mcp/asset/e404e162-f3a5-48eb-bac8-3a9e76c3d9f0";
-// collapse/expand arrows — left = collapse (<), right = expand (>)
-const imgIconCollapseLeft =
-  "https://www.figma.com/api/mcp/asset/8371b03c-eae1-4053-8d41-f4587501d654";
-const imgIconExpandRight =
-  "https://www.figma.com/api/mcp/asset/16b1db03-fce3-4e6d-97a2-4b2a6c94c29b";
-// timeline dots — 4 states
-const imgDotNotYet =
-  "https://www.figma.com/api/mcp/asset/0f07f994-cced-4438-ad74-095e940550ab"; // gray hollow
-const imgDotCurrent =
-  "https://www.figma.com/api/mcp/asset/c0290704-c9f9-47cb-84d2-949ff57aa9f9"; // green hollow
-const imgDotError =
-  "https://www.figma.com/api/mcp/asset/a62c9ed4-1b89-40b1-aa72-3a8c791f3bb2"; // red hollow
-const imgDotCompleted =
-  "https://www.figma.com/api/mcp/asset/8d04fe67-21a9-49b5-9a17-c54b246bc606"; // green filled
-const imgIconUpload =
-  "https://www.figma.com/api/mcp/asset/d3d6b516-8a49-4740-9ac6-af32a4edf345";
-const imgIconErrorOutline =
-  "https://www.figma.com/api/mcp/asset/ea34e8e8-a3d0-4c68-b6af-afd84dfc1938";
-const imgIconEditPencil =
-  "https://www.figma.com/api/mcp/asset/7b13527f-41a6-4f93-8f34-8ab6388f1eea";
 
 // ── draft persistence ─────────────────────────────────────────────────────────
 const DRAFT_KEY = "seedmoney_draft";
@@ -150,14 +122,14 @@ function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number
       required
       description="By checking all boxes below and continuing, you are agreeing to the SeedMoney Challenge Grantee Agreement"
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-4">
         <p className="text-[16px] leading-[1.5] text-black tracking-[0.15px]">
           I confirm that:
         </p>
         {GRANTEE_ITEMS.map((item, i) => (
           <label
             key={i}
-            className="flex items-start gap-0 cursor-pointer py-1"
+            className="flex items-center gap-0 cursor-pointer"
           >
             <div className="flex items-center p-[9px] shrink-0">
               <input
@@ -167,7 +139,7 @@ function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number
                 className="size-[18px] accent-[#2d7a45] cursor-pointer"
               />
             </div>
-            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-[0.15px] pt-[9px]">
+            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-[0.15px]">
               {item}
             </p>
           </label>
@@ -592,9 +564,7 @@ function PhotoPreviewCard({
       </div>
       {/* File info row */}
       <div className="flex items-center gap-3 px-4 py-3 bg-white">
-        <div className="relative size-5 shrink-0">
-          <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
-        </div>
+        <IconUpload size={20} color="#2d7a45" className="shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-[14px] leading-[1.33] text-[rgba(0,0,0,0.87)] truncate">{file.name}</p>
           <p className="text-[12px] text-[rgba(0,0,0,0.6)]">{formatSize(file.size)}</p>
@@ -680,9 +650,7 @@ function DropZone({
           className="hidden"
           onChange={(e) => processIncoming(e.target.files, [])}
         />
-        <div className="relative size-10 shrink-0">
-          <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
-        </div>
+        <IconUpload size={40} color="#2d7a45" className="shrink-0" />
         <p className="text-[14px] text-[rgba(0,0,0,0.87)] text-center">
           <span className="text-[#1976d2] underline">Click to upload</span>
           {" or drag and drop"}
@@ -999,8 +967,7 @@ function ReviewErrorBanner({ message, onEdit }: { message: string; onEdit: () =>
     <div className="bg-[#fdeded] rounded-[4px] flex items-start px-4 py-[6px] w-full">
       {/* ErrorOutline icon */}
       <div className="shrink-0 pt-[7px] pr-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imgIconErrorOutline} alt="" width={22} height={22} />
+        <IconErrorOutline size={22} color="#d32f2f" />
       </div>
       {/* Message */}
       <p className="flex-1 py-2 text-[14px] leading-[1.43] tracking-[0.15px] text-[#5f2120] min-w-0">
@@ -1012,8 +979,7 @@ function ReviewErrorBanner({ message, onEdit }: { message: string; onEdit: () =>
         onClick={onEdit}
         className="shrink-0 flex items-center gap-1.5 pl-4 pt-1 hover:opacity-80 transition-opacity"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imgIconEditPencil} alt="" width={18} height={18} />
+        <IconPencil size={18} color="#d32f2f" />
         <span className="text-[13px] font-bold leading-[22px] tracking-[0.46px] uppercase text-[#d32f2f]">
           Edit
         </span>
@@ -1026,9 +992,7 @@ function ReviewUploadedFile({ name, size }: { name: string; size: string }) {
   return (
     <div className="flex items-center justify-between border border-[rgba(0,0,0,0.1)] rounded-[8px] px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="relative size-5 shrink-0">
-          <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
-        </div>
+        <IconUpload size={20} color="#2d7a45" className="shrink-0" />
         <div>
           <p className="text-[14px] leading-[1.33] text-[rgba(0,0,0,0.87)]">{name}</p>
           <p className="text-[12px] text-[rgba(0,0,0,0.6)]">{size}</p>
@@ -1202,14 +1166,16 @@ function Step6(props: Step6Props) {
 // ── dashboard footer ──────────────────────────────────────────────────────────
 function DashboardFooter() {
   return (
-    <div className="border-t border-[#b5b5b5] flex items-center justify-between pt-6 font-[family-name:var(--font-opensans)] text-[14px] text-[#666]">
-      <span>© 2026 SeedMoney All Rights Reserved.</span>
-      <div className="flex gap-6 items-center">
-        <a href="https://donate.seedmoney.org/" className="hover:underline">SeedMoney</a>
-        <a href="https://donate.seedmoney.org/contact" className="hover:underline">Contact</a>
-        <a href="https://donate.seedmoney.org/faq" className="hover:underline">FAQ</a>
-        <a href="https://donate.seedmoney.org/tos" className="hover:underline">Terms</a>
-        <a href="https://donate.seedmoney.org/privacy" className="hover:underline">Privacy Policy</a>
+    <div className="border-t border-[#b5b5b5] pt-6 font-[family-name:var(--font-opensans)] text-[14px] text-[#666]">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-6 items-start md:items-center order-1 md:order-2">
+          <a href="https://donate.seedmoney.org/" className="hover:underline">SeedMoney</a>
+          <a href="https://donate.seedmoney.org/contact" className="hover:underline">Contact</a>
+          <a href="https://donate.seedmoney.org/faq" className="hover:underline">FAQ</a>
+          <a href="https://donate.seedmoney.org/tos" className="hover:underline">Terms</a>
+          <a href="https://donate.seedmoney.org/privacy" className="hover:underline">Privacy Policy</a>
+        </div>
+        <span className="order-2 md:order-1">© 2026 SeedMoney All Rights Reserved.</span>
       </div>
     </div>
   );
@@ -1218,16 +1184,12 @@ function DashboardFooter() {
 // ── main ──────────────────────────────────────────────────────────────────────
 type ValidationState = "ok" | "error" | "unvisited";
 
-function getDotImage(i: number, step: number, validations: ValidationState[]) {
-  if (i === step) return imgDotCurrent;
-  if (i > step) return imgDotNotYet;
-  return validations[i] === "ok" ? imgDotCompleted : imgDotError;
-}
 
 export default function ApplicationPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [pendingCampaigns, setPendingCampaigns] = useState<{ title: string }[]>([]);
   const [checked, setChecked] = useState<boolean[]>(
     Array(GRANTEE_ITEMS.length).fill(false)
@@ -1418,12 +1380,29 @@ export default function ApplicationPage() {
     else { setStep((step - 1) as Step); scrollRef.current?.scrollTo({ top: 0 }); }
   }
 
+  function handleStepNavigation(nextStep: Step) {
+    if (nextStep > 0 && !checked.every(Boolean)) {
+      setValidations((prev) => {
+        const next = [...prev];
+        next[0] = "error";
+        return next;
+      });
+      setStep(0);
+      scrollRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+
+    setStep(nextStep);
+    scrollRef.current?.scrollTo({ top: 0 });
+  }
+
   function toggleCheck(i: number) {
     const next = [...checked];
     next[i] = !next[i];
     setChecked(next);
   }
 
+  const hasAcceptedAgreement = checked.every(Boolean);
   const hasRequiredErrors =
     !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal ||
     !gardenCity || !gardenState || !projectCategory || beneficiaryPops.length === 0 ||
@@ -1431,8 +1410,8 @@ export default function ApplicationPage() {
     !orgName || !firstName || !contactEmail;
 
   const canNext =
-    step === 0 ? checked.every(Boolean) :
-    step === 5 ? !hasRequiredErrors :
+    step === 0 ? hasAcceptedAgreement :
+    step === 5 ? hasAcceptedAgreement && !hasRequiredErrors :
     true;
 
   return (
@@ -1448,20 +1427,71 @@ export default function ApplicationPage() {
         onSelectPending={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
         onSelectDraft={() => {}}
         onNewCampaign={() => {}}
+        onSettings={() => {}}
         onLogout={() => router.push("/")}
         disableNewCampaign
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
       />
 
       {/* Main content */}
-      <div ref={scrollRef} className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-10 pt-[60px] pb-5">
+      <div ref={scrollRef} className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-5 md:px-10 pt-[60px] pb-5">
         <div className="flex flex-col gap-4 flex-1">
-          <p className="font-bold text-[32px] leading-[1.235] text-[#096b2e]">
-            Application
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#096b2e]">
+              Application
+            </p>
+            <p className="p2 whitespace-nowrap" style={{ color: "var(--color-error)" }}>* Indicates required question</p>
+          </div>
+
+          {/* Mobile: horizontal progress stepper */}
+          <div className="flex flex-col gap-3 md:hidden">
+            <div className="flex items-center justify-between">
+              {STEPS.map((s, i) => {
+                const isError = i < step && validations[i] === "error";
+                const isDone = i < step && !isError;
+                const isCurrent = i === step;
+                return (
+                  <div key={i} className="flex flex-col items-center flex-1 relative">
+                    {/* connector line */}
+                    {i < STEPS.length - 1 && (
+                      <div className={`absolute top-[5px] left-[calc(50%+8px)] w-[calc(100%-16px)] h-0.5 ${isDone ? "bg-[#56bd60]" : "bg-[rgba(0,0,0,0.1)]"}`} />
+                    )}
+                    <button
+                      onClick={() => handleStepNavigation(i as Step)}
+                      className="flex flex-col items-center gap-1 relative z-10"
+                    >
+                      <StepDot state={getDotState(i, step, validations)} size={12} />
+                      <p className={`text-[9px] leading-tight text-center max-w-[48px] ${
+                        isCurrent ? "font-bold text-black" : isError ? "text-[#d32f2f]" : isDone ? "text-[rgba(0,0,0,0.87)]" : "text-[rgba(0,0,0,0.5)]"
+                      }`}>{s}</p>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
+                className="flex items-center gap-[6px] py-1 rounded-[8px] hover:bg-black/5 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                  <path d="M10 12L6 8L10 4" stroke="#666666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-[12px] leading-[1.33] text-[#666]">Exit</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <IconUpload size={16} color="#666" className="shrink-0" />
+                <p className="text-[12px] leading-[1.33] text-[#666]">
+                  {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex gap-10 items-start">
-            {/* Progress timeline */}
-            <div className="flex flex-col gap-6 shrink-0 w-[240px] sticky top-0">
+            {/* Progress timeline — desktop only */}
+            <div className="hidden md:flex flex-col gap-6 shrink-0 w-[240px] sticky top-0">
               <div className="flex flex-col p-2">
                 {STEPS.map((s, i) => {
                   const isError = i < step && validations[i] === "error";
@@ -1475,17 +1505,11 @@ export default function ApplicationPage() {
                   return (
                     <div key={i} className="flex flex-col items-start">
                       <button
-                        onClick={() => { setStep(i as Step); scrollRef.current?.scrollTo({ top: 0 }); }}
+                        onClick={() => handleStepNavigation(i as Step)}
                         className="flex gap-4 items-center w-full text-left hover:opacity-70 transition-opacity"
                       >
-                        <div className="relative size-3 shrink-0 my-[11.5px]">
-                          <Image
-                            src={getDotImage(i, step, validations)}
-                            alt=""
-                            fill
-                            className="object-contain"
-                            unoptimized
-                          />
+                        <div className="my-[11.5px]">
+                          <StepDot state={getDotState(i, step, validations)} size={12} />
                         </div>
                         <p className={`text-[14px] leading-[1.33] ${textClass}`}>
                           {s}
@@ -1501,9 +1525,7 @@ export default function ApplicationPage() {
 
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 px-2">
-                  <div className="relative size-5 shrink-0">
-                    <Image src={imgIconUpload} alt="" fill className="object-contain" unoptimized />
-                  </div>
+                  <IconUpload size={20} color="#666" className="shrink-0" />
                   <p className="text-[14px] leading-[1.33] text-[#666]">
                     {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
                   </p>
@@ -1575,20 +1597,20 @@ export default function ApplicationPage() {
                 firstName={firstName} lastName={lastName}
                 contactEmail={contactEmail} contactRole={contactRole}
                 usStates={usStates} countries={countries}
-                onGoToStep={(s) => setStep(s)}
+                onGoToStep={handleStepNavigation}
               />}
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
                 <button
                   onClick={handlePrev}
-                  className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[16px] leading-[26px] px-5 py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors"
+                  className="bg-white border border-[#2d7a45] text-[#2d7a45] font-bold text-[16px] leading-[26px] px-5 py-[10px] rounded-[8px] uppercase hover:bg-[#def2df] transition-colors w-full md:w-auto text-center"
                 >
                   {step === 0 ? "Cancel" : "Previous Step"}
                 </button>
                 <button
                   onClick={handleNext}
                   disabled={!canNext}
-                  className={`font-bold text-[16px] leading-[26px] px-5 py-[10px] rounded-[8px] uppercase transition-colors ${
+                  className={`font-bold text-[16px] leading-[26px] px-5 py-[10px] rounded-[8px] uppercase transition-colors w-full md:w-auto text-center ${
                     canNext
                       ? "bg-[#2d7a45] text-white hover:bg-[#245f37]"
                       : "bg-[#e0e0e0] text-[#a6a6a6] cursor-not-allowed"
@@ -1604,6 +1626,19 @@ export default function ApplicationPage() {
             <DashboardFooter />
           </div>
         </div>
+
+        {/* Floating hamburger button — mobile only */}
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          className="fixed bottom-6 right-6 z-30 md:hidden bg-white rounded-full size-16 flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.2)] transition-shadow"
+          aria-label="Open navigation"
+        >
+          <svg width="24" height="18" viewBox="0 0 24 18" fill="none">
+            <path d="M0 1.5C0 0.672 0.672 0 1.5 0h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 1.5Z" fill="#2d7a45"/>
+            <path d="M0 9C0 8.172 0.672 7.5 1.5 7.5h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 9Z" fill="#2d7a45"/>
+            <path d="M0 16.5C0 15.672 0.672 15 1.5 15h21a1.5 1.5 0 0 1 0 3h-21A1.5 1.5 0 0 1 0 16.5Z" fill="#2d7a45"/>
+          </svg>
+        </button>
       </div>
     </div>
     </ThemeProvider>
