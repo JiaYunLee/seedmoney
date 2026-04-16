@@ -91,7 +91,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-[25px] flex flex-col gap-4 w-full">
+    <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-5 md:p-[25px] flex flex-col gap-4 w-full">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <p className="font-bold text-[20px] leading-[1.6] text-[rgba(0,0,0,0.87)]">
@@ -1006,7 +1006,7 @@ function ReviewSubSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-[25px] flex flex-col gap-4 w-full">
+    <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-5 md:p-[25px] flex flex-col gap-4 w-full">
       <p className="font-bold text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
         {title}
       </p>
