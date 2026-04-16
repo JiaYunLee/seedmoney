@@ -115,6 +115,15 @@ export function IconClose({ size = 24, color = "currentColor", className }: { si
 
 // ── Application form icons ────────────────────────────────────────────────────
 
+export function IconCloudUpload({ size = 24, color = "#666", className }: { size?: number; color?: string; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M6.5 19C4.015 19 2 16.985 2 14.5C2 12.238 3.678 10.367 5.859 10.059C5.952 7.247 8.247 5 11.083 5C13.554 5 15.625 6.691 16.213 8.982C16.473 8.942 16.735 8.917 17 8.917C19.21 8.917 21 10.707 21 12.917C21 15.126 19.21 16.917 17 16.917H16.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 21V13m0 0l-3 3m3-3l3 3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function IconUpload({ size = 24, color = "#2d7a45", className }: { size?: number; color?: string; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>

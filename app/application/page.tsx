@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Sidebar } from "@/app/components/Sidebar";
 import Image from "next/image";
-import { IconUpload, IconErrorOutline, IconPencil, StepDot, getDotState } from "@/app/components/Icons";
+import { IconUpload, IconCloudUpload, IconErrorOutline, IconPencil, StepDot, getDotState } from "@/app/components/Icons";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
@@ -1462,9 +1462,9 @@ export default function ApplicationPage() {
                       className="flex flex-col items-center gap-1 relative z-10"
                     >
                       <StepDot state={getDotState(i, step, validations)} size={12} />
-                      <p className={`text-[9px] leading-tight text-center max-w-[48px] ${
+                      <p className={`text-[10px] leading-tight text-center max-w-[48px] ${
                         isCurrent ? "font-bold text-black" : isError ? "text-[#d32f2f]" : isDone ? "text-[rgba(0,0,0,0.87)]" : "text-[rgba(0,0,0,0.5)]"
-                      }`}>{s}</p>
+                      }`}>{s.replace("Information", "Info")}</p>
                     </button>
                   </div>
                 );
@@ -1481,7 +1481,7 @@ export default function ApplicationPage() {
                 <span className="text-[12px] leading-[1.33] text-[#666]">Exit</span>
               </button>
               <div className="flex items-center gap-2">
-                <IconUpload size={16} color="#666" className="shrink-0" />
+                <IconCloudUpload size={16} color="#666" className="shrink-0" />
                 <p className="text-[12px] leading-[1.33] text-[#666]">
                   {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
                 </p>
@@ -1525,7 +1525,7 @@ export default function ApplicationPage() {
 
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 px-2">
-                  <IconUpload size={20} color="#666" className="shrink-0" />
+                  <IconCloudUpload size={20} color="#666" className="shrink-0" />
                   <p className="text-[14px] leading-[1.33] text-[#666]">
                     {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
                   </p>

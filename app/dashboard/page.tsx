@@ -21,6 +21,7 @@ import Chip from "@mui/material/Chip";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import Menu from "@mui/material/Menu";
 
 // ── snackbar slide transition (right → left, ease-out-back) ──────────────────
 function SlideLeft(props: SlideProps) {
@@ -56,15 +57,20 @@ const FAQ_ITEMS = [
   },
 ];
 
-const DONORS = Array.from({ length: 10 }, (_, i) => ({
-  id: 3640 + i,
-  contributor: "Robert Anderson",
-  amount: "$100.00",
-  email: "randerson@email.com",
-  card: "**** **** **** 1234",
-  date: "2025-12-10",
-  status: "Success",
-}));
+const DONORS = [
+  { id: 3640, contributor: "John Smith",      amount: "$10,000.00", email: "johnsmith@gmail.com",      card: "**** **** **** 4821", date: "2025-11-03", status: "Success" },
+  { id: 3641, contributor: "Jane Doe",         amount: "$15,000.00", email: "janedoe@gmail.com",         card: "**** **** **** 3307", date: "2025-11-07", status: "Success" },
+  { id: 3642, contributor: "Alice Johnson",    amount: "$12,000.00", email: "alicejohnson@gmail.com",    card: "**** **** **** 9914", date: "2025-11-12", status: "Success" },
+  { id: 3643, contributor: "Michael Brown",    amount: "$8,500.00",  email: "mbrown@outlook.com",        card: "**** **** **** 5562", date: "2025-11-15", status: "Success" },
+  { id: 3644, contributor: "Sarah Williams",   amount: "$3,250.00",  email: "swilliams@yahoo.com",       card: "**** **** **** 7743", date: "2025-11-19", status: "Success" },
+  { id: 3645, contributor: "David Martinez",   amount: "$20,000.00", email: "dmartinez@gmail.com",       card: "**** **** **** 1196", date: "2025-11-22", status: "Success" },
+  { id: 3646, contributor: "Emily Chen",       amount: "$5,750.00",  email: "echen@icloud.com",          card: "**** **** **** 8834", date: "2025-11-28", status: "Success" },
+  { id: 3647, contributor: "Robert Taylor",    amount: "$9,100.00",  email: "rtaylor@outlook.com",       card: "**** **** **** 2251", date: "2025-12-01", status: "Success" },
+  { id: 3648, contributor: "Olivia Garcia",    amount: "$1,800.00",  email: "ogarcia@gmail.com",         card: "**** **** **** 6678", date: "2025-12-05", status: "Success" },
+  { id: 3649, contributor: "James Wilson",     amount: "$14,300.00", email: "jwilson@yahoo.com",         card: "**** **** **** 4490", date: "2025-12-08", status: "Success" },
+  { id: 3650, contributor: "Sophia Lee",       amount: "$6,600.00",  email: "sophialee@gmail.com",       card: "**** **** **** 3315", date: "2025-12-10", status: "Success" },
+  { id: 3651, contributor: "Daniel Thompson",  amount: "$11,200.00", email: "dthompson@icloud.com",      card: "**** **** **** 7729", date: "2025-12-12", status: "Success" },
+];
 
 // ── external link confirmation modal ─────────────────────────────────────────
 function ExternalLinkModal({ url, onClose }: { url: string; onClose: () => void }) {
@@ -278,7 +284,14 @@ function OverviewTab() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [helpTopic, setHelpTopic] = useState("");
   const [helpDetail, setHelpDetail] = useState("");
+  const [showSubmitted, setShowSubmitted] = useState(false);
   const canSubmit = helpTopic !== "" && helpDetail.trim() !== "";
+
+  function handleSubmit() {
+    setShowSubmitted(true);
+    setHelpTopic("");
+    setHelpDetail("");
+  }
 
   return (
     <div className="flex flex-col gap-4 md:gap-12">
@@ -370,6 +383,7 @@ function OverviewTab() {
         </div>
         <button
           disabled={!canSubmit}
+          onClick={handleSubmit}
           className={`self-start flex items-center gap-2 px-5 py-[10px] rounded-[8px] transition-colors font-bold text-[16px] leading-[26px] uppercase ${
             canSubmit
               ? "bg-[#2d7a45] text-white hover:bg-[#245f37] cursor-pointer"
@@ -379,19 +393,68 @@ function OverviewTab() {
           Submit Request
         </button>
       </div>
+
+      <Snackbar
+        open={showSubmitted}
+        autoHideDuration={3000}
+        onClose={() => setShowSubmitted(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        TransitionComponent={SlideLeft}
+        TransitionProps={{
+          style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" },
+        }}
+      >
+        <MuiAlert
+          severity="success"
+          onClose={() => setShowSubmitted(false)}
+          sx={{
+            backgroundColor: "#edf7ed",
+            color: "#1e4620",
+            fontFamily: "Lato, sans-serif",
+            "& .MuiAlert-icon": { color: "#2e7d32" },
+            "& .MuiAlertTitle-root": { color: "#1e4620", fontWeight: 600, fontFamily: "Lato, sans-serif" },
+            "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" },
+          }}
+        >
+          <AlertTitle>Request submitted</AlertTitle>
+          We&apos;ve received your request and will get back to you as soon as possible
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }
 
 // ── donors tab ────────────────────────────────────────────────────────────────
 type DonorRow = typeof DONORS[0];
+type SortField = "id" | "amount_asc" | "amount_desc" | "contributor" | "email";
+
+const SORT_OPTIONS: { value: SortField; label: string }[] = [
+  { value: "id", label: "ID" },
+  { value: "amount_asc", label: "Amount Low to High" },
+  { value: "amount_desc", label: "Amount High to Low" },
+  { value: "contributor", label: "Contributor Name" },
+  { value: "email", label: "Contributor Email" },
+];
 
 function DonorsTab() {
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<SortField>("id");
+  const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
 
   const filtered = DONORS.filter((d) =>
     Object.values(d).some((v) => String(v).toLowerCase().includes(search.toLowerCase()))
   );
+
+  const parseAmount = (s: string) => parseFloat(s.replace(/[$,]/g, ""));
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "id") return a.id - b.id;
+    if (sortBy === "amount_asc") return parseAmount(a.amount) - parseAmount(b.amount);
+    if (sortBy === "amount_desc") return parseAmount(b.amount) - parseAmount(a.amount);
+    if (sortBy === "contributor") return a.contributor.localeCompare(b.contributor);
+    if (sortBy === "email") return a.email.localeCompare(b.email);
+    return 0;
+  });
 
   const cols: GridColDef<DonorRow>[] = [
     { field: "id", headerName: "ID", flex: 0.5, minWidth: 70 },
@@ -420,9 +483,117 @@ function DonorsTab() {
   return (
     <div className="flex flex-col gap-6">
       <StatsCards />
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl overflow-hidden">
+
+      {/* ── mobile card layout ─────────────────────────────────── */}
+      <div className="md:hidden">
+        {/* header */}
+        <div className="flex items-center justify-between pb-4">
+          <div className="flex flex-col">
+            <span className="font-bold text-[20px] leading-[1.334] text-black" style={{ fontFamily: "Lato, sans-serif" }}>Donation List</span>
+            <span className="text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>12 Donations</span>
+          </div>
+          <button className="bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors">
+            Export to CSV
+          </button>
+        </div>
+
+        {/* search + sort row */}
+        <div className="flex items-center gap-[10px] pb-4">
+          <div className="flex-1 flex items-center bg-white border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] py-[8px] gap-[8px]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+              <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" stroke="rgba(0,0,0,0.54)" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search"
+              className="flex-1 text-[16px] leading-[1.33] bg-transparent outline-none text-[rgba(0,0,0,0.87)] placeholder:text-[rgba(0,0,0,0.6)]"
+              style={{ fontFamily: "Lato, sans-serif" }}
+            />
+          </div>
+          <button
+            onClick={(e) => setSortAnchor(e.currentTarget)}
+            className="bg-white border border-[rgba(0,0,0,0.23)] rounded-[4px] h-[40px] px-[10px] flex items-center justify-center shrink-0 hover:bg-gray-50 transition-colors"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M3 8h13M3 12h9M3 16h5" stroke="rgba(0,0,0,0.54)" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M19 4v16m0 0l-3-3m3 3l3-3" stroke="rgba(0,0,0,0.54)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <Menu
+            anchorEl={sortAnchor}
+            open={Boolean(sortAnchor)}
+            onClose={() => setSortAnchor(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            PaperProps={{
+              sx: { borderRadius: "8px", minWidth: 200, boxShadow: "0px 4px 16px rgba(0,0,0,0.12)" },
+            }}
+          >
+            <div className="px-4 py-3">
+              <p className="font-bold text-[14px] text-[rgba(0,0,0,0.87)]" style={{ fontFamily: "Lato, sans-serif" }}>Sort By</p>
+            </div>
+            {SORT_OPTIONS.map((opt) => (
+              <MuiMenuItem
+                key={opt.value}
+                onClick={() => { setSortBy(opt.value); setSortAnchor(null); }}
+                sx={{ fontFamily: "Lato, sans-serif", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 2 }}
+              >
+                {opt.label}
+                {sortBy === opt.value && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12l5 5L20 7" stroke="#2d7a45" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </MuiMenuItem>
+            ))}
+          </Menu>
+        </div>
+
+        {/* cards */}
+        <div className="flex flex-col gap-3 pb-5">
+          {sorted.map((row) => (
+            <div key={row.id} className="bg-white border border-[rgba(0,0,0,0.1)] rounded-[16px] overflow-hidden">
+              {/* card header */}
+              <div className="px-[20px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
+                <p className="font-bold text-[14px] leading-[1.5] text-black" style={{ fontFamily: "Lato, sans-serif" }}>
+                  ID: {row.id}
+                </p>
+              </div>
+              {/* card rows */}
+              <div className="px-[20px]">
+                <div className="flex items-center gap-[10px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
+                  <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Amount</span>
+                  <span className="text-[14px] leading-[1.5] text-black" style={{ fontFamily: "Lato, sans-serif" }}>{row.amount}</span>
+                </div>
+                <div className="flex items-center gap-[10px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
+                  <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Contributor Name</span>
+                  <span className="text-[14px] leading-[1.5] text-black" style={{ fontFamily: "Lato, sans-serif" }}>{row.contributor}</span>
+                </div>
+                <div className="flex items-center gap-[10px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
+                  <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Contributor Email</span>
+                  <span className="text-[14px] leading-[1.5] text-black break-all" style={{ fontFamily: "Lato, sans-serif" }}>{row.email}</span>
+                </div>
+                <div className="flex items-center gap-[10px] py-[10px]">
+                  <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Status</span>
+                  <Chip
+                    label={row.status}
+                    color="success"
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontFamily: "Lato, sans-serif", fontSize: 12, letterSpacing: "0.4px" }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── desktop table layout ───────────────────────────────── */}
+      <div className="hidden md:block bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl overflow-hidden">
         <div className="px-4 pt-6 pb-2">
-          <p className="font-bold text-[16px] text-[rgba(0,0,0,0.87)]">Donor List</p>
+          <p className="font-bold text-[16px] text-[rgba(0,0,0,0.87)]">Donation List</p>
           <p className="text-[14px] text-[rgba(0,0,0,0.6)]">12 donors</p>
         </div>
         <div className="px-4 pb-2">
@@ -459,7 +630,8 @@ function DonorsTab() {
           }}
         />
       </div>
-      <button className="self-start bg-[#2d7a45] text-white font-bold text-[16px] leading-[26px] px-[20px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors">
+
+      <button className="hidden md:inline-flex self-start bg-[#2d7a45] text-white font-bold text-[16px] leading-[26px] px-[20px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors">
         Export to CSV
       </button>
     </div>
@@ -530,7 +702,7 @@ function AnalyticsTab() {
           <LineChart
             width={chartWidth || undefined}
             height={320}
-            margin={{ top: 20, bottom: 30, left: 45, right: 16 }}
+            margin={{ top: 20, bottom: 30, left: 0, right: 16 }}
             series={[
               {
                 id: "daily",
@@ -564,6 +736,7 @@ function AnalyticsTab() {
             yAxis={[{
               min: 0,
               max: 220,
+              width: 45,
               valueFormatter: (v: number) => `$${v}`,
               tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
             }]}
