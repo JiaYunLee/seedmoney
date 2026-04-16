@@ -58,18 +58,13 @@ const FAQ_ITEMS = [
 ];
 
 const DONORS = [
-  { id: 3640, contributor: "John Smith",      amount: "$10,000.00", email: "johnsmith@gmail.com",      card: "**** **** **** 4821", date: "2025-11-03", status: "Success" },
-  { id: 3641, contributor: "Jane Doe",         amount: "$15,000.00", email: "janedoe@gmail.com",         card: "**** **** **** 3307", date: "2025-11-07", status: "Success" },
-  { id: 3642, contributor: "Alice Johnson",    amount: "$12,000.00", email: "alicejohnson@gmail.com",    card: "**** **** **** 9914", date: "2025-11-12", status: "Success" },
-  { id: 3643, contributor: "Michael Brown",    amount: "$8,500.00",  email: "mbrown@outlook.com",        card: "**** **** **** 5562", date: "2025-11-15", status: "Success" },
-  { id: 3644, contributor: "Sarah Williams",   amount: "$3,250.00",  email: "swilliams@yahoo.com",       card: "**** **** **** 7743", date: "2025-11-19", status: "Success" },
-  { id: 3645, contributor: "David Martinez",   amount: "$20,000.00", email: "dmartinez@gmail.com",       card: "**** **** **** 1196", date: "2025-11-22", status: "Success" },
-  { id: 3646, contributor: "Emily Chen",       amount: "$5,750.00",  email: "echen@icloud.com",          card: "**** **** **** 8834", date: "2025-11-28", status: "Success" },
-  { id: 3647, contributor: "Robert Taylor",    amount: "$9,100.00",  email: "rtaylor@outlook.com",       card: "**** **** **** 2251", date: "2025-12-01", status: "Success" },
-  { id: 3648, contributor: "Olivia Garcia",    amount: "$1,800.00",  email: "ogarcia@gmail.com",         card: "**** **** **** 6678", date: "2025-12-05", status: "Success" },
-  { id: 3649, contributor: "James Wilson",     amount: "$14,300.00", email: "jwilson@yahoo.com",         card: "**** **** **** 4490", date: "2025-12-08", status: "Success" },
-  { id: 3650, contributor: "Sophia Lee",       amount: "$6,600.00",  email: "sophialee@gmail.com",       card: "**** **** **** 3315", date: "2025-12-10", status: "Success" },
-  { id: 3651, contributor: "Daniel Thompson",  amount: "$11,200.00", email: "dthompson@icloud.com",      card: "**** **** **** 7729", date: "2025-12-12", status: "Success" },
+  { id: 3640, contributor: "John Smith",     amount: "$50.00",  email: "johnsmith@gmail.com",   card: "**** **** **** 4821", date: "2025-11-15", status: "Success" },
+  { id: 3641, contributor: "Jane Doe",        amount: "$25.00",  email: "janedoe@gmail.com",      card: "**** **** **** 3307", date: "2025-11-17", status: "Success" },
+  { id: 3642, contributor: "Alice Johnson",   amount: "$35.00",  email: "alicejohnson@gmail.com", card: "**** **** **** 9914", date: "2025-11-19", status: "Success" },
+  { id: 3643, contributor: "Michael Brown",   amount: "$30.00",  email: "mbrown@outlook.com",     card: "**** **** **** 5562", date: "2025-11-21", status: "Success" },
+  { id: 3644, contributor: "Sarah Williams",  amount: "$40.00",  email: "swilliams@yahoo.com",    card: "**** **** **** 7743", date: "2025-11-24", status: "Success" },
+  { id: 3645, contributor: "David Martinez",  amount: "$26.00",  email: "dmartinez@gmail.com",    card: "**** **** **** 1196", date: "2025-11-27", status: "Success" },
+  { id: 3646, contributor: "Emily Chen",      amount: "$25.00",  email: "echen@icloud.com",       card: "**** **** **** 8834", date: "2025-11-30", status: "Success" },
 ];
 
 // ── external link confirmation modal ─────────────────────────────────────────
@@ -229,8 +224,8 @@ function StatsCards() {
         </div>
         <div className="px-4 md:px-6">
           <div className="flex h-10 md:h-[80px] rounded-full overflow-hidden">
-            <div className="bg-[#56bd60] flex items-center justify-center h-full w-[20%] shrink-0">
-              <span className="text-white text-[12px] md:text-[14px]">20%</span>
+            <div className="bg-[#56bd60] flex items-center justify-center h-full w-[39%] shrink-0">
+              <span className="text-white text-[12px] md:text-[14px]">39%</span>
             </div>
             <div className="flex-1 h-full relative">
               <div className="absolute inset-0 bg-[#56bd60]" />
@@ -239,10 +234,10 @@ function StatsCards() {
           </div>
         </div>
         <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
-          <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">$130</p>
+          <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">$231</p>
           <div className="flex gap-2 items-center">
-            <p className="flex-1 text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">20% of $1,200 goal</p>
-            <p className="text-[12px] md:text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
+            <p className="flex-1 text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">39% of $600 goal</p>
+            <p className="text-[12px] md:text-[14px] leading-[1.33] text-[#00a63e]">+$25 today</p>
           </div>
         </div>
       </div>
@@ -251,15 +246,15 @@ function StatsCards() {
       <div className="flex flex-row md:flex-col gap-4 md:flex-1">
         <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col justify-between flex-1 p-px">
           <div className="flex items-start justify-between pt-4 px-4 md:pt-6 md:px-6">
-            <p className="text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Donors</p>
+            <p className="text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Total Donations</p>
             <IconPeople size={20} color="#666666" className="md:hidden" />
             <IconPeople size={28} color="#666666" className="hidden md:block" />
           </div>
-          <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
-            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">12</p>
+          <div className="mt-3 md:mt-0 pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
+            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">7</p>
             <div className="flex gap-2 items-center">
               <p className="flex-1 text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">Donors</p>
-              <p className="hidden md:block text-[14px] leading-[1.33] text-[#00a63e]">+12.5% from last week</p>
+              <p className="hidden md:block text-[14px] leading-[1.33] text-[#00a63e]">+1 this week</p>
             </div>
           </div>
         </div>
@@ -269,8 +264,8 @@ function StatsCards() {
             <IconTrendingUp size={20} color="#666666" className="md:hidden" />
             <IconTrendingUp size={28} color="#666666" className="hidden md:block" />
           </div>
-          <div className="pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
-            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">23</p>
+          <div className="mt-3 md:mt-0 pb-4 px-4 md:pb-6 md:px-6 flex flex-col gap-1">
+            <p className="font-bold text-[24px] md:text-[32px] leading-[1.2] md:leading-[1.235] text-[#101828]">15</p>
             <p className="text-[12px] md:text-[14px] leading-[1.33] text-[#6a7282]">days until campaign ends</p>
           </div>
         </div>
@@ -285,6 +280,7 @@ function OverviewTab() {
   const [helpTopic, setHelpTopic] = useState("");
   const [helpDetail, setHelpDetail] = useState("");
   const [showSubmitted, setShowSubmitted] = useState(false);
+  const [externalUrl, setExternalUrl] = useState<string | null>(null);
   const canSubmit = helpTopic !== "" && helpDetail.trim() !== "";
 
   function handleSubmit() {
@@ -304,7 +300,7 @@ function OverviewTab() {
           <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">
             Frequently Asked Questions
           </p>
-          <button className="flex items-center gap-1 shrink-0">
+          <button className="flex items-center gap-1 shrink-0" onClick={() => setExternalUrl("https://donate.seedmoney.org/faq")}>
             <span className="text-[#0288d1] text-[16px] leading-[1.5] underline">View more</span>
             <IconArrowSquareOut size={24} color="#0288d1" />
           </button>
@@ -420,6 +416,10 @@ function OverviewTab() {
           We&apos;ve received your request and will get back to you as soon as possible
         </MuiAlert>
       </Snackbar>
+
+      {externalUrl && (
+        <ExternalLinkModal url={externalUrl} onClose={() => setExternalUrl(null)} />
+      )}
     </div>
   );
 }
@@ -490,7 +490,7 @@ function DonorsTab() {
         <div className="flex items-center justify-between pb-4">
           <div className="flex flex-col">
             <span className="font-bold text-[20px] leading-[1.334] text-black" style={{ fontFamily: "Lato, sans-serif" }}>Donation List</span>
-            <span className="text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>12 Donations</span>
+            <span className="text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>7 Donations</span>
           </div>
           <button className="bg-white border border-[#123a1e] text-[#123a1e] font-bold text-[14px] leading-[16px] px-[14px] py-[10px] rounded-[8px] uppercase hover:bg-[#f0f7f1] transition-colors">
             Export to CSV
@@ -594,7 +594,7 @@ function DonorsTab() {
       <div className="hidden md:block bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl overflow-hidden">
         <div className="px-4 pt-6 pb-2">
           <p className="font-bold text-[16px] text-[rgba(0,0,0,0.87)]">Donation List</p>
-          <p className="text-[14px] text-[rgba(0,0,0,0.6)]">12 donors</p>
+          <p className="text-[14px] text-[rgba(0,0,0,0.6)]">7 donors</p>
         </div>
         <div className="px-4 pb-2">
           <input
@@ -639,16 +639,17 @@ function DonorsTab() {
 }
 
 // ── analytics tab ─────────────────────────────────────────────────────────────
-// ── chart data (Nov 15 – Dec 15 x-axis, data only through Dec 2) ─────────────
+// ── chart data (Nov 15 – Dec 15 x-axis, data only through Nov 23 today) ───────
 const CHART_DATES = [
   "Nov 15","Nov 16","Nov 17","Nov 18","Nov 19","Nov 20","Nov 21","Nov 22",
   "Nov 23","Nov 24","Nov 25","Nov 26","Nov 27","Nov 28","Nov 29","Nov 30",
   "Dec 1","Dec 2","Dec 3","Dec 4","Dec 5","Dec 6","Dec 7","Dec 8","Dec 9",
   "Dec 10","Dec 11","Dec 12","Dec 13","Dec 14","Dec 15",
 ];
-// Data through Dec 2 (index 17), null after
-const _daily = [75,45,68,72,65,60,88,112,120,118,115,98,44,58,62,48,52,46];
-const _total = [82,90,96,104,110,116,122,128,133,137,141,144,132,136,139,134,140,144];
+// Daily: Nov15–Nov30 (today), null Dec1 onwards
+// Nov15:$50 Nov17:$25 Nov19:$35 Nov21:$30 Nov24:$40 Nov27:$26 Nov30:$25 → total $231
+const _daily = [50, 0, 25, 0, 35, 0, 30, 0, 0, 40, 0, 0, 26, 0, 0, 25];
+const _total = [50, 50, 75, 75, 110, 110, 140, 140, 140, 180, 180, 180, 206, 206, 206, 231];
 const NULL_TAIL = Array(CHART_DATES.length - _daily.length).fill(null);
 const DAILY_EARNINGS: (number | null)[] = [..._daily, ...NULL_TAIL];
 const TOTAL_EARNINGS: (number | null)[] = [..._total, ...NULL_TAIL];
@@ -702,7 +703,7 @@ function AnalyticsTab() {
           <LineChart
             width={chartWidth || undefined}
             height={320}
-            margin={{ top: 20, bottom: 30, left: 0, right: 16 }}
+            margin={{ top: 20, bottom: 40, left: 0, right: 36 }}
             series={[
               {
                 id: "daily",
@@ -713,7 +714,7 @@ function AnalyticsTab() {
                 color: "#00a87e",
                 showMark: false,
                 connectNulls: false,
-                valueFormatter: (v: number | null) => v !== null ? `$${v}` : "",
+                valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
               },
               {
                 id: "total",
@@ -724,7 +725,7 @@ function AnalyticsTab() {
                 color: "#5c6bc0",
                 showMark: false,
                 connectNulls: false,
-                valueFormatter: (v: number | null) => v !== null ? `$${v}` : "",
+                valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
               },
             ]}
             xAxis={[{
@@ -735,9 +736,9 @@ function AnalyticsTab() {
             }]}
             yAxis={[{
               min: 0,
-              max: 220,
-              width: 45,
-              valueFormatter: (v: number) => `$${v}`,
+              max: 700,
+              width: 62,
+              valueFormatter: (v: number) => `$${v.toLocaleString()}`,
               tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
             }]}
             sx={{
@@ -762,20 +763,20 @@ function AnalyticsTab() {
               </linearGradient>
             </defs>
             <ChartsReferenceLine
-              y={180}
+              y={600}
               lineStyle={{ stroke: "#2e7d32", strokeDasharray: "6 3", strokeWidth: 1.5 }}
             />
           </LineChart>
 
-          {/* Goal badge — aligned with the y=180 reference line
-              Chart data area: top=20px, height=320-20-30=270px
-              y=180 out of 0–220: from top = 20 + (1 - 180/220) * 270 ≈ 69px
-              Badge height ≈ 26px → center at 69 - 13 = 56px */}
+          {/* Goal badge — aligned with y=600 reference line
+              Chart area: top=20px, plot height=270px, max=700
+              from top = 20 + (1 - 600/700) * 270 = 20 + 38.6 ≈ 59px
+              Badge height ≈ 26px → top = 59 - 13 = 46px */}
           <div
             className="absolute border border-[#2e7d32] text-[#2e7d32] text-[13px] px-3 py-0.5 rounded-full whitespace-nowrap bg-white pointer-events-none"
-            style={{ top: 56, right: 24 }}
+            style={{ top: 46, right: 24 }}
           >
-            Your Goal: $180
+            Your Goal: $600
           </div>
         </div>
       </div>
@@ -789,7 +790,7 @@ function DraftState({ title, onContinue }: { title: string; onContinue: () => vo
   return (
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{displayTitle}</p>
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-5 md:px-px">
         <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center max-w-[525px]">
           Your application haven&apos;t been submitted
@@ -816,7 +817,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#096b2e]">Dashboard</p>
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-5 md:px-px">
         <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center">No campaigns created</p>
         <p className="text-[16px] leading-[1.5] text-[#666] text-center max-w-md">
@@ -845,7 +846,7 @@ function ReviewState({ campaignName }: { campaignName: string }) {
   return (
     <div className="flex flex-col gap-4 flex-1">
       <p className="font-bold text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-px">
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-6 items-center py-[81px] px-5 md:px-px">
         <img src="/seedmoney-logo-circle.png" alt="SeedMoney" width={80} height={80} />
         <p className="font-bold text-[24px] leading-[1.334] text-[#666] text-center">
           Your campaign is under reviewed
@@ -874,7 +875,7 @@ function ActiveState({
 }) {
   const TABS: { key: "overview" | "donors" | "analytics"; label: string }[] = [
     { key: "overview", label: "Overview" },
-    { key: "donors", label: "Donors" },
+    { key: "donors", label: "Donation" },
     { key: "analytics", label: "Analytics" },
   ];
 
@@ -1210,18 +1211,10 @@ function DashboardContent() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    // Check if we arrived here from a form submit (flag set by application/page.tsx)
-    const fromSubmit = sessionStorage.getItem("seedmoney_from_submit") === "1";
-    sessionStorage.removeItem("seedmoney_from_submit"); // consume immediately
+    // Clean up any stale navigation flag
+    sessionStorage.removeItem("seedmoney_from_submit");
 
-    if (!fromSubmit) {
-      // Any other entry (browser refresh, direct URL, back button) → clear everything
-      sessionStorage.removeItem("seedmoney_draft");
-      sessionStorage.removeItem("seedmoney_pending");
-      return;
-    }
-
-    // Arrived from form submit → restore session data
+    // Restore session data — draft persists until submission
     const rawDraft = sessionStorage.getItem("seedmoney_draft");
     let hasDraftOnMount = false;
     if (rawDraft) {
@@ -1268,13 +1261,19 @@ function DashboardContent() {
   const hasPending = pendingCampaigns.length > 0;
 
   function handleNewCampaign() {
-    if (hasDraft) return;
+    if (hasDraft && state !== "active") return;
     setShowModal(true);
   }
 
   function handleStartApplication() {
     setShowModal(false);
-    router.push("/application");
+    if (state === "active") {
+      // Active state uses its own draft key — clear it for a fresh start
+      sessionStorage.removeItem("seedmoney_draft_new");
+      router.push("/application?from=active");
+    } else {
+      router.push("/application");
+    }
   }
 
   function handleContinueDraft() {
@@ -1299,7 +1298,7 @@ function DashboardContent() {
           onNewCampaign={handleNewCampaign}
           onSettings={() => setShowSettings(true)}
           onLogout={handleLogout}
-          activeCampaigns={state === "active" ? ["Save the Ocean Campaign"] : []}
+          activeCampaigns={state === "active" ? ["Full Belly Community Garden"] : []}
           selectedActiveIdx={state === "active" ? selectedActiveIdx : undefined}
           onSelectActive={setSelectedActiveIdx}
           mobileOpen={mobileNavOpen}
@@ -1308,7 +1307,7 @@ function DashboardContent() {
         <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-4 md:px-10 pt-[60px] pb-[60px] md:pb-5">
           {state === "active" && (
             <ActiveState
-              campaignName="Save the Ocean Campaign"
+              campaignName="Full Belly Community Garden"
               activeTab={activeTab}
               onTabChange={setActiveTab}
               onCopyLink={() => {

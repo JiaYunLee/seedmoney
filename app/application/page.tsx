@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Sidebar } from "@/app/components/Sidebar";
 import Image from "next/image";
 import { IconUpload, IconCloudUpload, IconErrorOutline, IconPencil, StepDot, getDotState } from "@/app/components/Icons";
@@ -26,6 +26,7 @@ const fieldSx = {
 
 // ── draft persistence ─────────────────────────────────────────────────────────
 const DRAFT_KEY = "seedmoney_draft";
+const DRAFT_KEY_NEW = "seedmoney_draft_new";
 
 // ── geo types ─────────────────────────────────────────────────────────────────
 type GeoOption = { code: string; name: string };
@@ -60,16 +61,20 @@ function StdField({
 }) {
   const controlled = value !== undefined && onChange !== undefined;
   return (
-    <TextField
-      variant="standard"
-      label={label}
-      type={type}
-      helperText={helperText}
-      fullWidth
-      sx={fieldSx}
-      slotProps={maxLength ? { htmlInput: { maxLength } } : undefined}
-      {...(controlled ? { value, onChange: (e) => onChange(e.target.value) } : {})}
-    />
+    <div className="flex flex-col w-full group">
+      <p className="text-[12px] leading-[1.4] tracking-[0.01em] text-[rgba(0,0,0,0.6)] group-focus-within:text-[#2d7a45] transition-colors">
+        {label}
+      </p>
+      <TextField
+        variant="standard"
+        type={type}
+        helperText={helperText}
+        fullWidth
+        sx={fieldSx}
+        slotProps={maxLength ? { htmlInput: { maxLength } } : undefined}
+        {...(controlled ? { value, onChange: (e) => onChange(e.target.value) } : {})}
+      />
+    </div>
   );
 }
 
@@ -92,7 +97,7 @@ function SectionCard({
           <p className="font-bold text-[20px] leading-[1.6] text-[rgba(0,0,0,0.87)]">
             {title}
           </p>
-          {required && <p className="text-[#ff8c29] font-bold text-[20px]">*</p>}
+          {required && <p className="font-bold text-[20px]" style={{ color: "var(--color-error)" }}>*</p>}
         </div>
         {description && (
           <p className="text-[14px] leading-[1.33] text-black">{description}</p>
@@ -112,7 +117,7 @@ const GRANTEE_ITEMS = [
   "I understand SeedMoney may request a brief progress report if my project receives funding.*",
   "I authorize SeedMoney to reuse submitted text and photos for educational or promotional purposes.*",
   "I certify that the information provided is accurate and complete.*",
-  "PLACEHOLDER FOR THE AI POLICY",
+  "I agree that SeedMoney may use AI tools to review my information for grammar and clarity.",
 ];
 
 function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number) => void }) {
@@ -122,7 +127,7 @@ function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number
       required
       description="By checking all boxes below and continuing, you are agreeing to the SeedMoney Challenge Grantee Agreement"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 md:gap-4">
         <p className="text-[16px] leading-[1.5] text-black tracking-[0.15px]">
           I confirm that:
         </p>
@@ -140,7 +145,17 @@ function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number
               />
             </div>
             <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-[0.15px]">
-              {item}
+              {item.endsWith("*") ? (
+                <>
+                  {item.slice(0, -1)}
+                  <span style={{ color: "var(--color-error)" }}>*</span>
+                </>
+              ) : (
+                <>
+                  {item}
+                  <span className="ml-1 text-[14px] text-[rgba(0,0,0,0.5)]">(Optional)</span>
+                </>
+              )}
             </p>
           </label>
         ))}
@@ -379,7 +394,15 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-async function getCroppedImg(file: File, croppedAreaPixels: Area): Promise<File> {
+function rotateSize(width: number, height: number, rotation: number) {
+  const rad = (rotation * Math.PI) / 180;
+  return {
+    width: Math.abs(Math.cos(rad) * width) + Math.abs(Math.sin(rad) * height),
+    height: Math.abs(Math.sin(rad) * width) + Math.abs(Math.cos(rad) * height),
+  };
+}
+
+async function getCroppedImg(file: File, croppedAreaPixels: Area, rotation = 0): Promise<File> {
   const url = URL.createObjectURL(file);
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new window.Image();
@@ -389,12 +412,26 @@ async function getCroppedImg(file: File, croppedAreaPixels: Area): Promise<File>
   });
   URL.revokeObjectURL(url);
 
+  const rad = (rotation * Math.PI) / 180;
+  const { width: bw, height: bh } = rotateSize(img.width, img.height, rotation);
+
+  // Draw the rotated full image onto an intermediate canvas
+  const rotCanvas = document.createElement("canvas");
+  rotCanvas.width = bw;
+  rotCanvas.height = bh;
+  const rotCtx = rotCanvas.getContext("2d")!;
+  rotCtx.translate(bw / 2, bh / 2);
+  rotCtx.rotate(rad);
+  rotCtx.translate(-img.width / 2, -img.height / 2);
+  rotCtx.drawImage(img, 0, 0);
+
+  // Crop from the rotated canvas
   const canvas = document.createElement("canvas");
   canvas.width = croppedAreaPixels.width;
   canvas.height = croppedAreaPixels.height;
   const ctx = canvas.getContext("2d")!;
   ctx.drawImage(
-    img,
+    rotCanvas,
     croppedAreaPixels.x,
     croppedAreaPixels.y,
     croppedAreaPixels.width,
@@ -424,21 +461,23 @@ function CropModal({
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const objectUrl = URL.createObjectURL(file);
+  const [objectUrl, setObjectUrl] = useState("");
 
   const onCropComplete = useCallback((_: Area, pixels: Area) => {
     setCroppedAreaPixels(pixels);
   }, []);
 
   useEffect(() => {
-    return () => URL.revokeObjectURL(objectUrl);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const url = URL.createObjectURL(file);
+    setObjectUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   async function handleApply() {
     if (!croppedAreaPixels) return;
-    const cropped = await getCroppedImg(file, croppedAreaPixels);
+    const cropped = await getCroppedImg(file, croppedAreaPixels, rotation);
     onApply(cropped);
     onClose();
   }
@@ -472,14 +511,16 @@ function CropModal({
             image={objectUrl}
             crop={crop}
             zoom={zoom}
+            rotation={rotation}
             aspect={16 / 9}
             onCropChange={setCrop}
             onZoomChange={setZoom}
+            onRotationChange={setRotation}
             onCropComplete={onCropComplete}
           />
         </div>
 
-        {/* Zoom slider */}
+        {/* Zoom + Rotate controls */}
         <div className="flex items-center gap-3 px-6 py-4">
           <p className="text-[14px] text-[rgba(0,0,0,0.6)] shrink-0">Zoom:</p>
           <input
@@ -494,6 +535,17 @@ function CropModal({
           <p className="text-[14px] text-[rgba(0,0,0,0.87)] shrink-0 w-10 text-right">
             {zoom.toFixed(1)}x
           </p>
+          <button
+            type="button"
+            onClick={() => setRotation((r) => (r + 90) % 360)}
+            title="Rotate 90°"
+            className="shrink-0 flex items-center justify-center gap-1 px-2 h-8 rounded-[6px] border border-[rgba(0,0,0,0.23)] text-[rgba(0,0,0,0.7)] hover:bg-gray-50 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 12a8 8 0 1 1-8-8V2l6 3-6 3V6a6 6 0 1 0 6 6h2Z" fill="currentColor"/>
+            </svg>
+            <span className="text-[13px] leading-none">Rotate</span>
+          </button>
         </div>
 
         {/* Actions */}
@@ -926,12 +978,13 @@ function Step5({
 }
 
 // ── review field ──────────────────────────────────────────────────────────────
-function ReviewField({ label, value }: { label: string; value?: string }) {
+function ReviewField({ label, value, error }: { label: string; value?: string; error?: boolean }) {
+  const showError = error && !value;
   return (
-    <div className="flex flex-col w-full border-b border-[rgba(0,0,0,0.1)] pb-3">
-      <p className="text-[12px] leading-[1.33] text-[rgba(0,0,0,0.6)]">{label}</p>
-      <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] mt-0.5">
-        {value ?? <span className="text-[rgba(0,0,0,0.38)]">—</span>}
+    <div className={`flex flex-col w-full border-b pb-3 ${showError ? "border-[#d32f2f]" : "border-[rgba(0,0,0,0.1)]"}`}>
+      <p className={`text-[12px] leading-[1.33] ${showError ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.6)]"}`}>{label}</p>
+      <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] mt-0.5 min-h-[24px]">
+        {value}
       </p>
     </div>
   );
@@ -1038,8 +1091,8 @@ function Step6(props: Step6Props) {
 
   const campaignError = !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal;
   const gardenInfoError = !gardenCity || !gardenState || !projectCategory || beneficiaryPops.length === 0;
-  const gardenStoryError = !gardenStory1 || !mainPhoto;
-  const contactError = !orgName || !firstName || !contactEmail;
+  const gardenStoryError = !gardenStory1 || !gardenStory2 || !gardenStory3 || !gardenStory4 || !mainPhoto;
+  const contactError = !orgName || !orgEIN || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -1048,26 +1101,26 @@ function Step6(props: Step6Props) {
       {campaignError && <ReviewErrorBanner message="Please complete campaign information." onEdit={() => onGoToStep(1)} />}
 
       <ReviewSubSection title="Campaign Title">
-        <ReviewField label="Campaign Title" value={campaignTitle || undefined} />
+        <ReviewField label="Campaign Title" value={campaignTitle || undefined} error={!campaignTitle} />
         <p className="text-[12px] text-[rgba(0,0,0,0.6)]">60 max characters</p>
       </ReviewSubSection>
 
       <ReviewSubSection title="Project Details & Impact">
-        <ReviewField label="About how many people will benefit from this garden this year?" value={peopleCount || undefined} />
-        <ReviewField label="Approximate garden size or scope" value={gardenSize || undefined} />
+        <ReviewField label="About how many people will benefit from this garden this year?" value={peopleCount || undefined} error={!peopleCount} />
+        <ReviewField label="Approximate garden size or scope" value={gardenSize || undefined} error={!gardenSize} />
         <div className="flex flex-col gap-1">
-          <p className="text-[14px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Is this a new or existing garden?</p>
+          <p className={`text-[14px] leading-[1.5] ${!gardenType ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.87)]"}`}>Is this a new or existing garden?</p>
           {["New garden", "Existing garden"].map((opt) => (
             <label key={opt} className="flex items-center gap-2">
               <input type="radio" readOnly checked={gardenType === opt} onChange={() => {}} className="accent-[#2d7a45] size-4" />
-              <span className={`text-[16px] leading-[1.5] ${gardenType === opt ? "text-[rgba(0,0,0,0.87)]" : "text-[rgba(0,0,0,0.38)]"}`}>{opt}</span>
+              <span className={`text-[16px] leading-[1.5] ${gardenType === opt ? "text-[rgba(0,0,0,0.87)]" : !gardenType ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.38)]"}`}>{opt}</span>
             </label>
           ))}
         </div>
       </ReviewSubSection>
 
       <ReviewSubSection title="Fundraising Goal">
-        <ReviewField label="Fundraising Goal (USD)" value={fundraisingGoal ? `$${Number(fundraisingGoal).toLocaleString()}` : undefined} />
+        <ReviewField label="Fundraising Goal (USD)" value={fundraisingGoal ? `$${Number(fundraisingGoal).toLocaleString()}` : undefined} error={!fundraisingGoal} />
       </ReviewSubSection>
 
       {/* ── Garden Information ── */}
@@ -1075,8 +1128,8 @@ function Step6(props: Step6Props) {
       {gardenInfoError && <ReviewErrorBanner message="Please complete garden information." onEdit={() => onGoToStep(2)} />}
 
       <ReviewSubSection title="Garden Location">
-        <ReviewField label="City*" value={gardenCity || undefined} />
-        <ReviewField label="State / Province*" value={gardenState ? lookupName(usStates, gardenState) : undefined} />
+        <ReviewField label="City*" value={gardenCity || undefined} error={!gardenCity} />
+        <ReviewField label="State / Province*" value={gardenState ? lookupName(usStates, gardenState) : undefined} error={!gardenState} />
         <ReviewField label="Country" value={gardenCountry ? lookupName(countries, gardenCountry) : undefined} />
       </ReviewSubSection>
 
@@ -1087,7 +1140,7 @@ function Step6(props: Step6Props) {
             <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{projectCategory}</span>
           </div>
         ) : (
-          <p className="text-[14px] text-[rgba(0,0,0,0.38)]">No category selected</p>
+          <p className="text-[14px] text-[#d32f2f]">No category selected</p>
         )}
       </ReviewSubSection>
 
@@ -1102,7 +1155,7 @@ function Step6(props: Step6Props) {
             ))}
           </div>
         ) : (
-          <p className="text-[14px] text-[rgba(0,0,0,0.38)]">No populations selected</p>
+          <p className="text-[14px] text-[#d32f2f]">No populations selected</p>
         )}
       </ReviewSubSection>
 
@@ -1111,17 +1164,17 @@ function Step6(props: Step6Props) {
       {gardenStoryError && <ReviewErrorBanner message="Please complete garden story and add a main photo." onEdit={() => onGoToStep(3)} />}
 
       <ReviewSubSection title="Garden Story">
-        <ReviewField label="Where is your garden, and who does it serve?" value={gardenStory1 || undefined} />
-        <ReviewField label="What challenge does your garden help address, and why does it matter locally?" value={gardenStory2 || undefined} />
-        <ReviewField label="What happens in the garden during the growing season?" value={gardenStory3 || undefined} />
-        <ReviewField label="What will this year's SeedMoney campaign make possible?" value={gardenStory4 || undefined} />
+        <ReviewField label="Where is your garden, and who does it serve?" value={gardenStory1 || undefined} error={!gardenStory1} />
+        <ReviewField label="What challenge does your garden help address, and why does it matter locally?" value={gardenStory2 || undefined} error={!gardenStory2} />
+        <ReviewField label="What happens in the garden during the growing season?" value={gardenStory3 || undefined} error={!gardenStory3} />
+        <ReviewField label="What will this year's SeedMoney campaign make possible?" value={gardenStory4 || undefined} error={!gardenStory4} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Main Photo">
         {mainPhoto ? (
           <PhotoPreviewCard file={mainPhoto} />
         ) : (
-          <p className="text-[14px] text-[rgba(0,0,0,0.38)]">No photo uploaded</p>
+          <p className="text-[14px] text-[#d32f2f]">No photo uploaded</p>
         )}
       </ReviewSubSection>
 
@@ -1140,23 +1193,23 @@ function Step6(props: Step6Props) {
       {contactError && <ReviewErrorBanner message="Please complete contact information." onEdit={() => onGoToStep(4)} />}
 
       <ReviewSubSection title="Organization Information">
-        <ReviewField label="Legal Name of Beneficiary Organization*" value={orgName || undefined} />
-        <ReviewField label="EIN or Public-Sector Identifier*" value={orgEIN || undefined} />
+        <ReviewField label="Legal Name of Beneficiary Organization*" value={orgName || undefined} error={!orgName} />
+        <ReviewField label="EIN or Public-Sector Identifier*" value={orgEIN || undefined} error={!orgEIN} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Beneficiary Organization Mailing Address">
-        <ReviewField label="Street 1" value={street1 || undefined} />
+        <ReviewField label="Street 1" value={street1 || undefined} error={!street1} />
         <ReviewField label="Street 2" value={street2 || undefined} />
-        <ReviewField label="City*" value={mailCity || undefined} />
-        <ReviewField label="State / Province*" value={mailState ? lookupName(usStates, mailState) : undefined} />
-        <ReviewField label="ZIP / Postal Code*" value={mailZip || undefined} />
+        <ReviewField label="City*" value={mailCity || undefined} error={!mailCity} />
+        <ReviewField label="State / Province*" value={mailState ? lookupName(usStates, mailState) : undefined} error={!mailState} />
+        <ReviewField label="ZIP / Postal Code*" value={mailZip || undefined} error={!mailZip} />
         <ReviewField label="Country" value={mailCountry ? lookupName(countries, mailCountry) : undefined} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Primary Contact Information">
-        <ReviewField label="First Name*" value={firstName || undefined} />
-        <ReviewField label="Last Name*" value={lastName || undefined} />
-        <ReviewField label="Email*" value={contactEmail || undefined} />
+        <ReviewField label="First Name*" value={firstName || undefined} error={!firstName} />
+        <ReviewField label="Last Name*" value={lastName || undefined} error={!lastName} />
+        <ReviewField label="Email*" value={contactEmail || undefined} error={!contactEmail} />
         <ReviewField label="Role or Title" value={contactRole || undefined} />
       </ReviewSubSection>
     </div>
@@ -1185,8 +1238,21 @@ function DashboardFooter() {
 type ValidationState = "ok" | "error" | "unvisited";
 
 
+// Tiny component — the ONLY part that calls useSearchParams, wrapped in Suspense
+function FromActiveReader({ onRead }: { onRead: (v: boolean) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onRead(searchParams.get("from") === "active");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 export default function ApplicationPage() {
   const router = useRouter();
+  const [isFromActive, setIsFromActive] = useState(false);
+  const draftKey = isFromActive ? DRAFT_KEY_NEW : DRAFT_KEY;
+  const dashboardUrl = isFromActive ? "/dashboard?state=active" : "/dashboard";
   const [step, setStep] = useState<Step>(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -1237,10 +1303,11 @@ export default function ApplicationPage() {
   const [savedAt, setSavedAt] = useState("");
   const draftRef = useRef<Record<string, unknown>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
+  const submittedRef = useRef(false);
 
   // Keep ref current every render so the interval always has fresh values
   draftRef.current = {
-    step, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
+    step, checked, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
     gardenCity, gardenState, gardenCountry, projectCategory, beneficiaryPops,
     gardenStory1, gardenStory2, gardenStory3, gardenStory4,
     orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
@@ -1266,11 +1333,12 @@ export default function ApplicationPage() {
 
   // Restore draft on mount
   useEffect(() => {
-    const raw = sessionStorage.getItem(DRAFT_KEY);
+    const raw = sessionStorage.getItem(draftKey);
     if (!raw) return;
     try {
       const d = JSON.parse(raw);
       if (d.step !== undefined) setStep(d.step as Step);
+      if (Array.isArray(d.checked)) setChecked(d.checked);
       setCampaignTitle(d.campaignTitle ?? "");
       setPeopleCount(d.peopleCount ?? "");
       setGardenSize(d.gardenSize ?? "");
@@ -1298,20 +1366,43 @@ export default function ApplicationPage() {
       setContactEmail(d.contactEmail ?? "");
       setContactRole(d.contactRole ?? "");
       if (d.savedAt) setSavedAt(d.savedAt);
+
+      // Recompute validation state for every step before the restored step
+      const restoredStep: number = typeof d.step === "number" ? d.step : 0;
+      const dChecked: boolean[] = Array.isArray(d.checked) ? d.checked : Array(GRANTEE_ITEMS.length).fill(false);
+      const computed: ValidationState[] = Array(6).fill("unvisited") as ValidationState[];
+      for (let i = 0; i < restoredStep && i < 6; i++) {
+        let valid: boolean;
+        switch (i) {
+          case 0: valid = GRANTEE_ITEMS.every((item, idx) => !item.endsWith("*") || dChecked[idx]); break;
+          case 1: valid = !!String(d.campaignTitle ?? "").trim() && !!String(d.peopleCount ?? "").trim() && !!String(d.gardenSize ?? "").trim() && !!d.gardenType && !!String(d.fundraisingGoal ?? "").trim(); break;
+          case 2: valid = !!String(d.gardenCity ?? "").trim(); break;
+          case 3: valid = !!String(d.gardenStory1 ?? "").trim() && !!String(d.gardenStory2 ?? "").trim() && !!String(d.gardenStory3 ?? "").trim() && !!String(d.gardenStory4 ?? "").trim(); break;
+          case 4: valid = !!String(d.orgName ?? "").trim() && !!String(d.orgEIN ?? "").trim() && !!String(d.street1 ?? "").trim() && !!String(d.mailCity ?? "").trim() && !!String(d.mailState ?? "").trim() && !!String(d.mailZip ?? "").trim() && !!String(d.firstName ?? "").trim() && !!String(d.lastName ?? "").trim() && !!String(d.contactEmail ?? "").trim(); break;
+          default: valid = true;
+        }
+        computed[i] = valid ? "ok" : "unvisited";
+      }
+      setValidations(computed);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-save every 60 seconds
+  // Save 1 second after any field change
   useEffect(() => {
-    function save() {
+    if (submittedRef.current) return;
+    const timer = setTimeout(() => {
       const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftRef.current, savedAt: time }));
+      sessionStorage.setItem(draftKey, JSON.stringify({ ...draftRef.current, savedAt: time }));
       setSavedAt(time);
-    }
-    const id = setInterval(save, 60_000);
-    return () => clearInterval(id);
-  }, []);
+    }, 1000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, checked, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
+      gardenCity, gardenState, gardenCountry, projectCategory, beneficiaryPops,
+      gardenStory1, gardenStory2, gardenStory3, gardenStory4,
+      orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
+      firstName, lastName, contactEmail, contactRole]);
 
   useEffect(() => {
     // Fetch countries from REST Countries API
@@ -1342,13 +1433,17 @@ export default function ApplicationPage() {
       .catch(() => {});
   }, []);
 
+  function saveDraft() {
+    sessionStorage.setItem(draftKey, JSON.stringify({ ...draftRef.current }));
+  }
+
   function validateCurrentStep(): boolean {
     switch (step) {
-      case 0: return checked.every(Boolean);
+      case 0: return GRANTEE_ITEMS.every((item, i) => !item.endsWith("*") || checked[i]);
       case 1: return campaignTitle.trim() !== "" && peopleCount.trim() !== "" && gardenSize.trim() !== "" && gardenType !== "" && fundraisingGoal.trim() !== "";
       case 2: return gardenCity.trim() !== "";
-      case 3: return gardenStory1.trim() !== "";
-      case 4: return orgName.trim() !== "";
+      case 3: return gardenStory1.trim() !== "" && gardenStory2.trim() !== "" && gardenStory3.trim() !== "" && gardenStory4.trim() !== "";
+      case 4: return orgName.trim() !== "" && orgEIN.trim() !== "" && street1.trim() !== "" && mailCity.trim() !== "" && mailState.trim() !== "" && mailZip.trim() !== "" && firstName.trim() !== "" && lastName.trim() !== "" && contactEmail.trim() !== "";
       case 5: return true;
       default: return true;
     }
@@ -1369,19 +1464,20 @@ export default function ApplicationPage() {
       const existing: { title: string }[] = Array.isArray(parsed) ? parsed : [];
       existing.push({ title: campaignTitle });
       sessionStorage.setItem("seedmoney_pending", JSON.stringify(existing));
-      sessionStorage.removeItem(DRAFT_KEY);
+      submittedRef.current = true;
+      sessionStorage.removeItem(draftKey);
       sessionStorage.setItem("seedmoney_from_submit", "1");
-      router.push("/dashboard");
+      router.push(dashboardUrl);
     }
   }
 
   function handlePrev() {
-    if (step === 0) { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }
+    if (step === 0) { saveDraft(); sessionStorage.setItem("seedmoney_from_submit", "1"); router.push(dashboardUrl); }
     else { setStep((step - 1) as Step); scrollRef.current?.scrollTo({ top: 0 }); }
   }
 
   function handleStepNavigation(nextStep: Step) {
-    if (nextStep > 0 && !checked.every(Boolean)) {
+    if (nextStep > 0 && !GRANTEE_ITEMS.every((item, i) => !item.endsWith("*") || checked[i])) {
       setValidations((prev) => {
         const next = [...prev];
         next[0] = "error";
@@ -1402,12 +1498,12 @@ export default function ApplicationPage() {
     setChecked(next);
   }
 
-  const hasAcceptedAgreement = checked.every(Boolean);
+  const hasAcceptedAgreement = GRANTEE_ITEMS.every((item, i) => !item.endsWith("*") || checked[i]);
   const hasRequiredErrors =
     !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal ||
     !gardenCity || !gardenState || !projectCategory || beneficiaryPops.length === 0 ||
-    !gardenStory1 || !mainPhoto ||
-    !orgName || !firstName || !contactEmail;
+    !gardenStory1 || !gardenStory2 || !gardenStory3 || !gardenStory4 || !mainPhoto ||
+    !orgName || !orgEIN || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
 
   const canNext =
     step === 0 ? hasAcceptedAgreement :
@@ -1424,11 +1520,13 @@ export default function ApplicationPage() {
         pendingCampaigns={pendingCampaigns}
         draftTitle={campaignTitle || ""}
         selectedNav={{ type: "draft" }}
-        onSelectPending={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
+        onSelectPending={() => { saveDraft(); sessionStorage.setItem("seedmoney_from_submit", "1"); router.push(dashboardUrl); }}
         onSelectDraft={() => {}}
+        onSelectActive={(_idx) => { saveDraft(); sessionStorage.setItem("seedmoney_from_submit", "1"); router.push(dashboardUrl); }}
         onNewCampaign={() => {}}
         onSettings={() => {}}
         onLogout={() => router.push("/")}
+        activeCampaigns={isFromActive ? ["Full Belly Community Garden"] : []}
         disableNewCampaign
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}
@@ -1472,7 +1570,7 @@ export default function ApplicationPage() {
             </div>
             <div className="flex items-center justify-between">
               <button
-                onClick={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
+                onClick={() => { saveDraft(); sessionStorage.setItem("seedmoney_from_submit", "1"); router.push(dashboardUrl); }}
                 className="flex items-center gap-[6px] py-1 rounded-[8px] hover:bg-black/5 transition-colors"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
@@ -1531,7 +1629,7 @@ export default function ApplicationPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => { sessionStorage.setItem("seedmoney_from_submit", "1"); router.push("/dashboard"); }}
+                  onClick={() => { saveDraft(); sessionStorage.setItem("seedmoney_from_submit", "1"); router.push(dashboardUrl); }}
                   className="flex items-center gap-[6px] px-2 py-[10px] rounded-[8px] hover:bg-black/5 transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
@@ -1630,7 +1728,7 @@ export default function ApplicationPage() {
         {/* Floating hamburger button — mobile only */}
         <button
           onClick={() => setMobileNavOpen(true)}
-          className="fixed bottom-6 right-6 z-30 md:hidden bg-white rounded-full size-16 flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.2)] transition-shadow"
+          className="fixed bottom-6 right-6 z-30 md:hidden bg-white border border-[#123a1e] rounded-full size-16 flex items-center justify-center shadow-[0px_1px_8px_0px_rgba(0,0,0,0.12),0px_3px_4px_0px_rgba(0,0,0,0.14),0px_3px_3px_-2px_rgba(0,0,0,0.2)] hover:bg-[#f0f7f1] transition-colors"
           aria-label="Open navigation"
         >
           <svg width="24" height="18" viewBox="0 0 24 18" fill="none">
@@ -1641,6 +1739,9 @@ export default function ApplicationPage() {
         </button>
       </div>
     </div>
+    <Suspense fallback={null}>
+      <FromActiveReader onRead={setIsFromActive} />
+    </Suspense>
     </ThemeProvider>
   );
 }
