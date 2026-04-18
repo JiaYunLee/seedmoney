@@ -108,6 +108,72 @@ function SectionCard({
   );
 }
 
+// ── AI Opt-In Modal ───────────────────────────────────────────────────────────
+function AiOptInModal({ onClose, onOptIn }: { onClose: () => void; onOptIn: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ background: "rgba(0,0,0,0.55)" }}
+    >
+      <div
+        className="bg-white rounded-[4px] flex flex-col w-full max-w-[600px] overflow-hidden"
+        style={{ boxShadow: "0px 11px 15px -7px rgba(0,0,0,0.2), 0px 24px 38px 3px rgba(0,0,0,0.14), 0px 9px 46px 8px rgba(0,0,0,0.12)" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4">
+          <p className="font-bold text-[20px] leading-[1.6] text-[#123a1e]">AI Editing Opt-In Statement</p>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0 ml-4 text-[rgba(0,0,0,0.54)] hover:text-[rgba(0,0,0,0.87)] transition-colors"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 pb-5 text-[16px] leading-[1.5] text-black">
+          <p>
+            If you opt in, any text from your application that is displayed on the publicly facing campaign page may be processed using GPT-5-mini for the purpose of light editing and polishing, such as grammar and clarity improvements, while preserving your original style, intent, and content. No substantive changes will be made.
+          </p>
+          <p className="mt-4">
+            AI editing will only be applied if you explicitly opt in. By selecting this option, you consent to the use of AI in editing your campaign text and authorize SeedMoney, the ability to review, accept, or deny any suggested edits on your behalf. Once edits introduced by GPT-5-mini are finalized and implemented, you will not have the ability to make further changes to your campaign page text.
+          </p>
+          <p className="mt-4">
+            Please note that OpenAI may retain data and use submitted content in prompts for model training purposes, as outlined in their Terms of Use{" "}
+            <a href="https://openai.com/policies/row-terms-of-use/" target="_blank" rel="noopener noreferrer" className="underline text-black">
+              here.
+            </a>{" "}
+            You are responsible for ensuring that your submission does not include any sensitive information or personally identifiable information (PII). For guidance on what constitutes PII, reference{" "}
+            <a href="https://www.dol.gov/general/ppii" target="_blank" rel="noopener noreferrer" className="underline text-black">
+              this definition{" "}
+            </a>
+            from the U.S. Department of Labor.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2 p-2">
+          <button
+            onClick={onClose}
+            className="px-2 py-[10px] rounded-[8px] font-bold text-[14px] leading-[16px] uppercase text-[#666] hover:text-[rgba(0,0,0,0.87)] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => { onOptIn(); onClose(); }}
+            className="bg-[#2d7a45] hover:bg-[#245f37] transition-colors px-[14px] py-[10px] rounded-[8px] font-bold text-[14px] leading-[16px] uppercase text-white"
+          >
+            Opt In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── step 1: Grantee Agreement ─────────────────────────────────────────────────
 const GRANTEE_ITEMS = [
   "I am not seeking to raise funds for personal use or a personal garden. Funds must benefit a nonprofit or community-serving garden project.*",
@@ -117,50 +183,74 @@ const GRANTEE_ITEMS = [
   "I understand SeedMoney may request a brief progress report if my project receives funding.*",
   "I authorize SeedMoney to reuse submitted text and photos for educational or promotional purposes.*",
   "I certify that the information provided is accurate and complete.*",
-  "I agree that SeedMoney may use AI tools to review my information for grammar and clarity.",
+  "I authorize SeedMoney to use artificial intelligence (AI) to edit my campaign page text hosted on Givebutter, as described in the opt-in statement.",
 ];
 
 function Step1({ checked, onChange }: { checked: boolean[]; onChange: (i: number) => void }) {
+  const [showAiModal, setShowAiModal] = useState(false);
+  const aiIndex = GRANTEE_ITEMS.length - 1;
+
   return (
-    <SectionCard
-      title="Grantee Agreement"
-      required
-      description="By checking all boxes below and continuing, you are agreeing to the SeedMoney Challenge Grantee Agreement"
-    >
-      <div className="flex flex-col gap-6 md:gap-4">
-        <p className="text-[16px] leading-[1.5] text-black tracking-[0.15px]">
-          I confirm that:
-        </p>
-        {GRANTEE_ITEMS.map((item, i) => (
-          <label
-            key={i}
-            className="flex items-center gap-0 cursor-pointer"
-          >
-            <div className="flex items-center p-[9px] shrink-0">
-              <input
-                type="checkbox"
-                checked={checked[i]}
-                onChange={() => onChange(i)}
-                className="size-[18px] accent-[#2d7a45] cursor-pointer"
-              />
-            </div>
-            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-[0.15px]">
-              {item.endsWith("*") ? (
-                <>
-                  {item.slice(0, -1)}
-                  <span style={{ color: "var(--color-error)" }}>*</span>
-                </>
-              ) : (
-                <>
-                  {item}
-                  <span className="ml-1 text-[14px] text-[rgba(0,0,0,0.5)]">(Optional)</span>
-                </>
-              )}
-            </p>
-          </label>
-        ))}
-      </div>
-    </SectionCard>
+    <>
+      {showAiModal && (
+        <AiOptInModal
+          onClose={() => setShowAiModal(false)}
+          onOptIn={() => { if (!checked[aiIndex]) onChange(aiIndex); }}
+        />
+      )}
+      <SectionCard
+        title="Grantee Agreement"
+        required
+        description="By checking all boxes below and continuing, you are agreeing to the SeedMoney Challenge Grantee Agreement"
+      >
+        <div className="flex flex-col gap-6 md:gap-4">
+          <p className="text-[16px] leading-[1.5] text-black tracking-[0.15px]">
+            I confirm that:
+          </p>
+          {GRANTEE_ITEMS.map((item, i) => (
+            <label
+              key={i}
+              className="flex items-center gap-0 cursor-pointer"
+            >
+              <div className="flex items-center p-[9px] shrink-0">
+                <input
+                  type="checkbox"
+                  checked={checked[i]}
+                  onChange={() => onChange(i)}
+                  className="size-[18px] accent-[#2d7a45] cursor-pointer"
+                />
+              </div>
+              <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] tracking-[0.15px]">
+                {item.endsWith("*") ? (
+                  <>
+                    {item.slice(0, -1)}
+                    <span style={{ color: "var(--color-error)" }}>*</span>
+                  </>
+                ) : i === aiIndex ? (
+                  <>
+                    I authorize SeedMoney to use artificial intelligence (AI) to edit my campaign page text hosted on Givebutter, as described in the{" "}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setShowAiModal(true); }}
+                      className="underline text-[#1976d2] hover:text-[#1565c0] transition-colors"
+                    >
+                      opt-in statement
+                    </button>
+                    .{" "}
+                    <span className="text-[14px] text-[rgba(0,0,0,0.5)]">(optional)</span>
+                  </>
+                ) : (
+                  <>
+                    {item}
+                    <span className="ml-1 text-[14px] text-[rgba(0,0,0,0.5)]">(Optional)</span>
+                  </>
+                )}
+              </p>
+            </label>
+          ))}
+        </div>
+      </SectionCard>
+    </>
   );
 }
 
