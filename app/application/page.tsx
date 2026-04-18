@@ -70,6 +70,7 @@ function StdField({
         type={type}
         helperText={helperText}
         fullWidth
+        multiline
         sx={fieldSx}
         slotProps={maxLength ? { htmlInput: { maxLength } } : undefined}
         {...(controlled ? { value, onChange: (e) => onChange(e.target.value) } : {})}
@@ -382,14 +383,14 @@ function Step3({
   gardenCountry, setGardenCountry,
   projectCategory, setProjectCategory,
   beneficiaryPops, setBeneficiaryPops,
-  usStates, countries,
+  statesMap, countries,
 }: {
   gardenCity: string; setGardenCity: (v: string) => void;
   gardenState: string; setGardenState: (v: string) => void;
   gardenCountry: string; setGardenCountry: (v: string) => void;
   projectCategory: string; setProjectCategory: (v: string) => void;
   beneficiaryPops: string[]; setBeneficiaryPops: (v: string[]) => void;
-  usStates: GeoOption[];
+  statesMap: Record<string, GeoOption[]>;
   countries: GeoOption[];
 }) {
   function togglePop(pop: string) {
@@ -399,6 +400,7 @@ function Step3({
         : [...beneficiaryPops, pop]
     );
   }
+  const gardenStateOptions = statesMap[gardenCountry] ?? [];
   return (
     <div className="flex flex-col gap-4 w-full">
       <SectionCard title="Garden Location" required>
@@ -413,8 +415,8 @@ function Step3({
             fullWidth
             sx={fieldSx}
           >
-            <MenuItem value=""><em>{usStates.length === 0 ? "Loading…" : "None"}</em></MenuItem>
-            {usStates.map(({ code, name }) => (
+            <MenuItem value=""><em>None</em></MenuItem>
+            {gardenStateOptions.map(({ code, name }) => (
               <MenuItem key={code} value={code}>{name}</MenuItem>
             ))}
           </TextField>
@@ -993,7 +995,7 @@ function Step5({
   lastName, setLastName,
   contactEmail, setContactEmail,
   contactRole, setContactRole,
-  usStates, countries,
+  statesMap, countries,
 }: {
   orgName: string; setOrgName: (v: string) => void;
   orgEIN: string; setOrgEIN: (v: string) => void;
@@ -1007,9 +1009,10 @@ function Step5({
   lastName: string; setLastName: (v: string) => void;
   contactEmail: string; setContactEmail: (v: string) => void;
   contactRole: string; setContactRole: (v: string) => void;
-  usStates: GeoOption[];
+  statesMap: Record<string, GeoOption[]>;
   countries: GeoOption[];
 }) {
+  const mailStateOptions = statesMap[mailCountry] ?? [];
   return (
     <div className="flex flex-col gap-4 w-full">
       <SectionCard title="Organization Information" required>
@@ -1033,8 +1036,8 @@ function Step5({
             fullWidth
             sx={fieldSx}
           >
-            <MenuItem value=""><em>{usStates.length === 0 ? "Loading…" : "None"}</em></MenuItem>
-            {usStates.map(({ code, name }) => (
+            <MenuItem value=""><em>None</em></MenuItem>
+            {mailStateOptions.map(({ code, name }) => (
               <MenuItem key={code} value={code}>{name}</MenuItem>
             ))}
           </TextField>
@@ -1160,7 +1163,7 @@ type Step6Props = {
   street1: string; street2: string; mailCity: string; mailState: string;
   mailZip: string; mailCountry: string;
   firstName: string; lastName: string; contactEmail: string; contactRole: string;
-  usStates: GeoOption[]; countries: GeoOption[];
+  statesMap: Record<string, GeoOption[]>; countries: GeoOption[];
   onGoToStep: (step: Step) => void;
 };
 
@@ -1172,7 +1175,7 @@ function Step6(props: Step6Props) {
     mainPhoto, supportingPhotos,
     orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
     firstName, lastName, contactEmail, contactRole,
-    usStates, countries, onGoToStep,
+    statesMap, countries, onGoToStep,
   } = props;
 
   function lookupName(list: GeoOption[], code: string) {
@@ -1182,7 +1185,7 @@ function Step6(props: Step6Props) {
   const campaignError = !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal;
   const gardenInfoError = !gardenCity || !gardenState || !projectCategory || beneficiaryPops.length === 0;
   const gardenStoryError = !gardenStory1 || !gardenStory2 || !gardenStory3 || !gardenStory4 || !mainPhoto;
-  const contactError = !orgName || !orgEIN || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
+  const contactError = !orgName || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -1219,7 +1222,7 @@ function Step6(props: Step6Props) {
 
       <ReviewSubSection title="Garden Location">
         <ReviewField label="City*" value={gardenCity || undefined} error={!gardenCity} />
-        <ReviewField label="State / Province*" value={gardenState ? lookupName(usStates, gardenState) : undefined} error={!gardenState} />
+        <ReviewField label="State / Province*" value={gardenState ? lookupName(statesMap[gardenCountry] ?? [], gardenState) : undefined} error={!gardenState} />
         <ReviewField label="Country" value={gardenCountry ? lookupName(countries, gardenCountry) : undefined} />
       </ReviewSubSection>
 
@@ -1284,14 +1287,14 @@ function Step6(props: Step6Props) {
 
       <ReviewSubSection title="Organization Information">
         <ReviewField label="Legal Name of Beneficiary Organization*" value={orgName || undefined} error={!orgName} />
-        <ReviewField label="EIN or Public-Sector Identifier*" value={orgEIN || undefined} error={!orgEIN} />
+        <ReviewField label="EIN or Public-Sector Identifier" value={orgEIN || undefined} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Beneficiary Organization Mailing Address">
         <ReviewField label="Street 1" value={street1 || undefined} error={!street1} />
         <ReviewField label="Street 2" value={street2 || undefined} />
         <ReviewField label="City*" value={mailCity || undefined} error={!mailCity} />
-        <ReviewField label="State / Province*" value={mailState ? lookupName(usStates, mailState) : undefined} error={!mailState} />
+        <ReviewField label="State / Province*" value={mailState ? lookupName(statesMap[mailCountry] ?? [], mailState) : undefined} error={!mailState} />
         <ReviewField label="ZIP / Postal Code*" value={mailZip || undefined} error={!mailZip} />
         <ReviewField label="Country" value={mailCountry ? lookupName(countries, mailCountry) : undefined} />
       </ReviewSubSection>
@@ -1386,7 +1389,47 @@ export default function ApplicationPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactRole, setContactRole] = useState("");
   // Geo
-  const [usStates, setUsStates] = useState<GeoOption[]>([]);
+  const [statesMap, setStatesMap] = useState<Record<string, GeoOption[]>>({
+    NG: [
+      { code: "NG-AB", name: "Abia State" },
+      { code: "NG-AD", name: "Adamawa State" },
+      { code: "NG-AK", name: "Akwa Ibom State" },
+      { code: "NG-AN", name: "Anambra State" },
+      { code: "NG-BA", name: "Bauchi State" },
+      { code: "NG-BY", name: "Bayelsa State" },
+      { code: "NG-BE", name: "Benue State" },
+      { code: "NG-BO", name: "Borno State" },
+      { code: "NG-CR", name: "Cross River State" },
+      { code: "NG-DE", name: "Delta State" },
+      { code: "NG-EB", name: "Ebonyi State" },
+      { code: "NG-ED", name: "Edo State" },
+      { code: "NG-EK", name: "Ekiti State" },
+      { code: "NG-EN", name: "Enugu State" },
+      { code: "NG-FC", name: "Federal Capital Territory" },
+      { code: "NG-GO", name: "Gombe State" },
+      { code: "NG-IM", name: "Imo State" },
+      { code: "NG-JI", name: "Jigawa State" },
+      { code: "NG-KD", name: "Kaduna State" },
+      { code: "NG-KN", name: "Kano State" },
+      { code: "NG-KT", name: "Katsina State" },
+      { code: "NG-KE", name: "Kebbi State" },
+      { code: "NG-KO", name: "Kogi State" },
+      { code: "NG-KW", name: "Kwara State" },
+      { code: "NG-LA", name: "Lagos State" },
+      { code: "NG-NA", name: "Nasarawa State" },
+      { code: "NG-NI", name: "Niger State" },
+      { code: "NG-OG", name: "Ogun State" },
+      { code: "NG-ON", name: "Ondo State" },
+      { code: "NG-OS", name: "Osun State" },
+      { code: "NG-OY", name: "Oyo State" },
+      { code: "NG-PL", name: "Plateau State" },
+      { code: "NG-RI", name: "Rivers State" },
+      { code: "NG-SO", name: "Sokoto State" },
+      { code: "NG-TA", name: "Taraba State" },
+      { code: "NG-YO", name: "Yobe State" },
+      { code: "NG-ZA", name: "Zamfara State" },
+    ],
+  });
   const [countries, setCountries] = useState<GeoOption[]>([]);
 
   // Auto-save
@@ -1468,7 +1511,7 @@ export default function ApplicationPage() {
           case 1: valid = !!String(d.campaignTitle ?? "").trim() && !!String(d.peopleCount ?? "").trim() && !!String(d.gardenSize ?? "").trim() && !!d.gardenType && !!String(d.fundraisingGoal ?? "").trim(); break;
           case 2: valid = !!String(d.gardenCity ?? "").trim(); break;
           case 3: valid = !!String(d.gardenStory1 ?? "").trim() && !!String(d.gardenStory2 ?? "").trim() && !!String(d.gardenStory3 ?? "").trim() && !!String(d.gardenStory4 ?? "").trim(); break;
-          case 4: valid = !!String(d.orgName ?? "").trim() && !!String(d.orgEIN ?? "").trim() && !!String(d.street1 ?? "").trim() && !!String(d.mailCity ?? "").trim() && !!String(d.mailState ?? "").trim() && !!String(d.mailZip ?? "").trim() && !!String(d.firstName ?? "").trim() && !!String(d.lastName ?? "").trim() && !!String(d.contactEmail ?? "").trim(); break;
+          case 4: valid = !!String(d.orgName ?? "").trim() && !!String(d.street1 ?? "").trim() && !!String(d.mailCity ?? "").trim() && !!String(d.mailState ?? "").trim() && !!String(d.mailZip ?? "").trim() && !!String(d.firstName ?? "").trim() && !!String(d.lastName ?? "").trim() && !!String(d.contactEmail ?? "").trim(); break;
           default: valid = true;
         }
         computed[i] = valid ? "ok" : "unvisited";
@@ -1507,20 +1550,29 @@ export default function ApplicationPage() {
       })
       .catch(() => {});
 
-    // Fetch US states from CountriesNow API
-    fetch("https://countriesnow.space/api/v0.1/countries/states", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ country: "United States" }),
-    })
-      .then((r) => r.json())
-      .then((data: { data: { states: { name: string; state_code: string }[] } }) => {
-        const states = (data.data?.states ?? [])
-          .map((s) => ({ code: s.state_code, name: s.name }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-        setUsStates(states);
+    // Fetch states for supported countries
+    const COUNTRY_FETCHES: { code: string; name: string }[] = [
+      { code: "US", name: "United States" },
+      { code: "KE", name: "Kenya" },
+      { code: "UG", name: "Uganda" },
+    ];
+    for (const { code, name } of COUNTRY_FETCHES) {
+      fetch("https://countriesnow.space/api/v0.1/countries/states", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country: name }),
       })
-      .catch(() => {});
+        .then((r) => r.json())
+        .then((data: { data: { states: { name: string; state_code: string }[] } }) => {
+          const raw = (data.data?.states ?? []).map((s) => ({ code: s.state_code || s.name, name: s.name }));
+          if (code === "KE" && !raw.some((s) => s.name === "Butere")) {
+            raw.push({ code: "Butere", name: "Butere" });
+          }
+          const states = raw.sort((a, b) => a.name.localeCompare(b.name));
+          setStatesMap((prev) => ({ ...prev, [code]: states }));
+        })
+        .catch(() => {});
+    }
   }, []);
 
   function saveDraft() {
@@ -1533,7 +1585,7 @@ export default function ApplicationPage() {
       case 1: return campaignTitle.trim() !== "" && peopleCount.trim() !== "" && gardenSize.trim() !== "" && gardenType !== "" && fundraisingGoal.trim() !== "";
       case 2: return gardenCity.trim() !== "";
       case 3: return gardenStory1.trim() !== "" && gardenStory2.trim() !== "" && gardenStory3.trim() !== "" && gardenStory4.trim() !== "";
-      case 4: return orgName.trim() !== "" && orgEIN.trim() !== "" && street1.trim() !== "" && mailCity.trim() !== "" && mailState.trim() !== "" && mailZip.trim() !== "" && firstName.trim() !== "" && lastName.trim() !== "" && contactEmail.trim() !== "";
+      case 4: return orgName.trim() !== "" && street1.trim() !== "" && mailCity.trim() !== "" && mailState.trim() !== "" && mailZip.trim() !== "" && firstName.trim() !== "" && lastName.trim() !== "" && contactEmail.trim() !== "";
       case 5: return true;
       default: return true;
     }
@@ -1593,7 +1645,7 @@ export default function ApplicationPage() {
     !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal ||
     !gardenCity || !gardenState || !projectCategory || beneficiaryPops.length === 0 ||
     !gardenStory1 || !gardenStory2 || !gardenStory3 || !gardenStory4 || !mainPhoto ||
-    !orgName || !orgEIN || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
+    !orgName || !street1 || !mailCity || !mailState || !mailZip || !firstName || !lastName || !contactEmail;
 
   const canNext =
     step === 0 ? hasAcceptedAgreement :
@@ -1746,7 +1798,7 @@ export default function ApplicationPage() {
                 gardenCountry={gardenCountry} setGardenCountry={setGardenCountry}
                 projectCategory={projectCategory} setProjectCategory={setProjectCategory}
                 beneficiaryPops={beneficiaryPops} setBeneficiaryPops={setBeneficiaryPops}
-                usStates={usStates} countries={countries}
+                statesMap={statesMap} countries={countries}
               />}
               {step === 3 && <Step4
                 gardenStory1={gardenStory1} setGardenStory1={setGardenStory1}
@@ -1769,7 +1821,7 @@ export default function ApplicationPage() {
                 lastName={lastName} setLastName={setLastName}
                 contactEmail={contactEmail} setContactEmail={setContactEmail}
                 contactRole={contactRole} setContactRole={setContactRole}
-                usStates={usStates} countries={countries}
+                statesMap={statesMap} countries={countries}
               />}
               {step === 5 && <Step6
                 campaignTitle={campaignTitle} peopleCount={peopleCount}
@@ -1784,7 +1836,7 @@ export default function ApplicationPage() {
                 mailState={mailState} mailZip={mailZip} mailCountry={mailCountry}
                 firstName={firstName} lastName={lastName}
                 contactEmail={contactEmail} contactRole={contactRole}
-                usStates={usStates} countries={countries}
+                statesMap={statesMap} countries={countries}
                 onGoToStep={handleStepNavigation}
               />}
 
