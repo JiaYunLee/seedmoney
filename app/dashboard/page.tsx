@@ -950,15 +950,24 @@ function ActiveState({
 
   return (
     <div className="flex flex-col gap-4 flex-1">
-      <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
-      <div className="flex items-center border-b border-[rgba(0,0,0,0.12)] overflow-x-auto no-scrollbar">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-3">
+        <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
+        <Chip
+          label="SeedMoney Challenge Active"
+          color="success"
+          variant="outlined"
+          size="medium"
+          sx={{ fontFamily: "Lato, sans-serif", fontSize: 13, flexShrink: 0, alignSelf: "flex-start", mt: { md: "4px" } }}
+        />
+      </div>
+      <div className="flex items-center overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => onTabChange(t.key)}
             className={`px-4 py-[9px] font-bold text-[14px] font-[family-name:var(--font-opensans)] transition-colors ${
               activeTab === t.key
-                ? "text-[#1976d2] border-b-2 border-[#1976d2] -mb-px"
+                ? "text-[#1976d2] border-b-2 border-[#1976d2]"
                 : "text-[rgba(0,0,0,0.6)] hover:text-[rgba(0,0,0,0.87)]"
             }`}
           >

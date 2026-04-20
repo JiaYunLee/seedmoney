@@ -135,7 +135,7 @@ export function Sidebar({
               disabled={isNewCampaignDisabled}
               className={`flex items-center gap-2 justify-center px-[26px] py-3 rounded-[8px] w-full transition-colors ${
                 isNewCampaignDisabled
-                  ? "bg-white cursor-not-allowed"
+                  ? "bg-white/20 cursor-not-allowed"
                   : "bg-white hover:bg-[#f0f7f1]"
               }`}
             >
@@ -323,10 +323,10 @@ export function Sidebar({
             <button
               onClick={isNewCampaignDisabled ? undefined : onNewCampaign}
               disabled={isNewCampaignDisabled}
-              className={`border rounded-[8px] flex items-center gap-2 justify-center px-[26px] py-3 w-full transition-colors ${
+              className={`rounded-[8px] flex items-center gap-2 justify-center px-[26px] py-3 w-full transition-colors ${
                 isNewCampaignDisabled
-                  ? "bg-white border-[#a6a6a6] cursor-not-allowed"
-                  : "bg-white border-[#123a1e] hover:bg-[#f0f7f1]"
+                  ? "bg-white/20 cursor-not-allowed"
+                  : "bg-white hover:bg-[#f0f7f1]"
               }`}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
