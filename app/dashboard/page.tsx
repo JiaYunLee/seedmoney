@@ -436,10 +436,46 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: "email", label: "Contributor Email" },
 ];
 
+function EmailCell({ email, onCopy }: { email: string; onCopy: (e: string) => void }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      className="flex items-center gap-3 md:gap-1 w-full h-full"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <a
+        href={`mailto:${email}`}
+        className="underline text-[rgba(0,0,0,0.87)] truncate text-[14px]"
+        style={{ fontFamily: "Lato, sans-serif" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {email}
+      </a>
+      <button
+          onClick={(e) => { e.stopPropagation(); onCopy(email); }}
+          className={`shrink-0 p-0.5 rounded hover:bg-[rgba(0,0,0,0.08)] transition-colors inline-flex md:hidden ${hovered ? "md:inline-flex" : ""}`}
+          title="Copy email"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="9" y="9" width="13" height="13" rx="2" stroke="rgba(0,0,0,0.54)" strokeWidth="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="rgba(0,0,0,0.54)" strokeWidth="2"/>
+          </svg>
+        </button>
+    </div>
+  );
+}
+
 function DonorsTab() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("id");
   const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  function handleCopyEmail(email: string) {
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(true);
+  }
 
   const filtered = DONORS.filter((d) =>
     Object.values(d).some((v) => String(v).toLowerCase().includes(search.toLowerCase()))
@@ -460,7 +496,13 @@ function DonorsTab() {
     { field: "id", headerName: "ID", flex: 0.5, minWidth: 70 },
     { field: "contributor", headerName: "Contributor", flex: 1.5, minWidth: 130 },
     { field: "amount", headerName: "Amount", flex: 1, minWidth: 90 },
-    { field: "email", headerName: "Contributor Email", flex: 2, minWidth: 160 },
+    {
+      field: "email",
+      headerName: "Contributor Email",
+      flex: 2,
+      minWidth: 160,
+      renderCell: (params) => <EmailCell email={params.value} onCopy={handleCopyEmail} />,
+    },
     { field: "card", headerName: "Card/Reference No.", flex: 1.8, minWidth: 150 },
     { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
     {
@@ -572,7 +614,7 @@ function DonorsTab() {
                 </div>
                 <div className="flex items-center gap-[10px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
                   <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Contributor Email</span>
-                  <span className="text-[14px] leading-[1.5] text-black break-all" style={{ fontFamily: "Lato, sans-serif" }}>{row.email}</span>
+                  <EmailCell email={row.email} onCopy={handleCopyEmail} />
                 </div>
                 <div className="flex items-center gap-[10px] py-[10px]">
                   <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Status</span>
@@ -634,6 +676,33 @@ function DonorsTab() {
       <button className="hidden md:inline-flex self-start bg-[#2d7a45] text-white font-bold text-[16px] leading-[26px] px-[20px] py-[10px] rounded-[8px] uppercase hover:bg-[#245f37] transition-colors">
         Export to CSV
       </button>
+
+      <Snackbar
+        open={copiedEmail}
+        autoHideDuration={3000}
+        onClose={() => setCopiedEmail(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        TransitionComponent={SlideLeft}
+        TransitionProps={{
+          style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" },
+        }}
+      >
+        <MuiAlert
+          severity="success"
+          onClose={() => setCopiedEmail(false)}
+          sx={{
+            backgroundColor: "#edf7ed",
+            color: "#1e4620",
+            fontFamily: "Lato, sans-serif",
+            "& .MuiAlert-icon": { color: "#2e7d32" },
+            "& .MuiAlertTitle-root": { color: "#1e4620", fontWeight: 600, fontFamily: "Lato, sans-serif" },
+            "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" },
+          }}
+        >
+          <AlertTitle>Successfully Copied!</AlertTitle>
+          Email has been copied to clipboard
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }
