@@ -31,6 +31,93 @@ const DRAFT_KEY_NEW = "seedmoney_draft_new";
 // ── geo types ─────────────────────────────────────────────────────────────────
 type GeoOption = { code: string; name: string };
 
+const FALLBACK_COUNTRIES: GeoOption[] = [
+  { code: "US", name: "United States" },
+  { code: "AF", name: "Afghanistan" },
+  { code: "AL", name: "Albania" },
+  { code: "DZ", name: "Algeria" },
+  { code: "AR", name: "Argentina" },
+  { code: "AU", name: "Australia" },
+  { code: "AT", name: "Austria" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "BE", name: "Belgium" },
+  { code: "BR", name: "Brazil" },
+  { code: "KH", name: "Cambodia" },
+  { code: "CM", name: "Cameroon" },
+  { code: "CA", name: "Canada" },
+  { code: "CL", name: "Chile" },
+  { code: "CN", name: "China" },
+  { code: "CO", name: "Colombia" },
+  { code: "CD", name: "Congo, DR" },
+  { code: "CI", name: "Côte d'Ivoire" },
+  { code: "CU", name: "Cuba" },
+  { code: "CZ", name: "Czech Republic" },
+  { code: "DK", name: "Denmark" },
+  { code: "DO", name: "Dominican Republic" },
+  { code: "EC", name: "Ecuador" },
+  { code: "EG", name: "Egypt" },
+  { code: "ET", name: "Ethiopia" },
+  { code: "FI", name: "Finland" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+  { code: "GH", name: "Ghana" },
+  { code: "GT", name: "Guatemala" },
+  { code: "GN", name: "Guinea" },
+  { code: "HT", name: "Haiti" },
+  { code: "HN", name: "Honduras" },
+  { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" },
+  { code: "IQ", name: "Iraq" },
+  { code: "IE", name: "Ireland" },
+  { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" },
+  { code: "JM", name: "Jamaica" },
+  { code: "JP", name: "Japan" },
+  { code: "JO", name: "Jordan" },
+  { code: "KZ", name: "Kazakhstan" },
+  { code: "KE", name: "Kenya" },
+  { code: "MX", name: "Mexico" },
+  { code: "MA", name: "Morocco" },
+  { code: "MZ", name: "Mozambique" },
+  { code: "MM", name: "Myanmar" },
+  { code: "NP", name: "Nepal" },
+  { code: "NL", name: "Netherlands" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "NI", name: "Nicaragua" },
+  { code: "NG", name: "Nigeria" },
+  { code: "NO", name: "Norway" },
+  { code: "PK", name: "Pakistan" },
+  { code: "PA", name: "Panama" },
+  { code: "PE", name: "Peru" },
+  { code: "PH", name: "Philippines" },
+  { code: "PL", name: "Poland" },
+  { code: "PT", name: "Portugal" },
+  { code: "RW", name: "Rwanda" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "SN", name: "Senegal" },
+  { code: "ZA", name: "South Africa" },
+  { code: "KR", name: "South Korea" },
+  { code: "SS", name: "South Sudan" },
+  { code: "ES", name: "Spain" },
+  { code: "LK", name: "Sri Lanka" },
+  { code: "SD", name: "Sudan" },
+  { code: "SE", name: "Sweden" },
+  { code: "CH", name: "Switzerland" },
+  { code: "TZ", name: "Tanzania" },
+  { code: "TH", name: "Thailand" },
+  { code: "TT", name: "Trinidad and Tobago" },
+  { code: "TN", name: "Tunisia" },
+  { code: "TR", name: "Turkey" },
+  { code: "UG", name: "Uganda" },
+  { code: "UA", name: "Ukraine" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "VN", name: "Vietnam" },
+  { code: "YE", name: "Yemen" },
+  { code: "ZM", name: "Zambia" },
+  { code: "ZW", name: "Zimbabwe" },
+];
+
 // ── step config ───────────────────────────────────────────────────────────────
 const STEPS = [
   "Grantee Agreement",
@@ -70,9 +157,11 @@ function StdField({
         type={type}
         helperText={helperText}
         fullWidth
-        multiline
+        {...(type !== "number" && { multiline: true })}
         sx={fieldSx}
-        slotProps={maxLength ? { htmlInput: { maxLength } } : undefined}
+        slotProps={type === "number"
+          ? { htmlInput: { min: 0, step: 1 } }
+          : maxLength ? { htmlInput: { maxLength } } : undefined}
         {...(controlled ? { value, onChange: (e) => onChange(e.target.value) } : {})}
       />
     </div>
@@ -289,6 +378,7 @@ function Step2({
         <div className="flex flex-col gap-4 w-full">
           <StdField
             label="About how many people will benefit from this garden this year?"
+            type="number"
             value={peopleCount}
             onChange={setPeopleCount}
           />
@@ -398,11 +488,11 @@ function Step3({
   countries: GeoOption[];
 }) {
   function togglePop(pop: string) {
-    setBeneficiaryPops(
-      beneficiaryPops.includes(pop)
-        ? beneficiaryPops.filter((p) => p !== pop)
-        : [...beneficiaryPops, pop]
-    );
+    if (beneficiaryPops.includes(pop)) {
+      setBeneficiaryPops(beneficiaryPops.filter((p) => p !== pop));
+    } else if (beneficiaryPops.length < 3) {
+      setBeneficiaryPops([...beneficiaryPops, pop]);
+    }
   }
   const gardenStateOptions = statesMap[gardenCountry] ?? [];
   return (
@@ -475,21 +565,24 @@ function Step3({
       <SectionCard title="Beneficiary Populations Served" required>
         <div className="flex flex-col gap-0">
           <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">
-            Select all that apply:
+            Select up to three populations:
           </p>
           {BENEFICIARY_POPULATIONS.map((pop) => {
             const isOther = pop === "Other (please specify)";
+            const checked = beneficiaryPops.includes(pop);
+            const disabled = !checked && beneficiaryPops.length >= 3;
             return (
-              <label key={pop} className="flex items-center gap-0 cursor-pointer py-1">
+              <label key={pop} className={`flex items-center gap-0 py-1 ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}>
                 <div className="flex items-center p-[9px] shrink-0">
                   <input
                     type="checkbox"
-                    checked={beneficiaryPops.includes(pop)}
+                    checked={checked}
+                    disabled={disabled}
                     onChange={() => togglePop(pop)}
-                    className="size-[18px] accent-[#2d7a45] cursor-pointer"
+                    className="size-[18px] accent-[#2d7a45] cursor-pointer disabled:cursor-not-allowed"
                   />
                 </div>
-                {isOther && beneficiaryPops.includes(pop) ? (
+                {isOther && checked ? (
                   <input
                     autoFocus
                     type="text"
@@ -1469,7 +1562,7 @@ export default function ApplicationPage() {
       { code: "NG-ZA", name: "Zamfara State" },
     ],
   });
-  const [countries, setCountries] = useState<GeoOption[]>([]);
+  const [countries, setCountries] = useState<GeoOption[]>(FALLBACK_COUNTRIES);
 
   // Auto-save
   const [savedAt, setSavedAt] = useState("");
