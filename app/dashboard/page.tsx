@@ -290,10 +290,8 @@ function OverviewTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4 md:gap-12">
+    <div className="flex flex-col gap-4 md:gap-6">
       <StatsCards />
-      <hr className="hidden md:block border-[rgba(0,0,0,0.12)]" />
-
       {/* FAQ */}
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
         <div className="flex items-end gap-5">
@@ -336,8 +334,6 @@ function OverviewTab() {
           })}
         </div>
       </div>
-
-      <hr className="hidden md:block border-[rgba(0,0,0,0.12)]" />
 
       {/* Need Help */}
       <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
@@ -950,14 +946,14 @@ function ActiveState({
 
   return (
     <div className="flex flex-col gap-4 flex-1">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-3">
+      <div className="flex flex-row items-start justify-between gap-2 md:gap-3">
         <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
         <Chip
-          label="SeedMoney Challenge Active"
+          label="Challenge Active"
           color="success"
           variant="outlined"
           size="medium"
-          sx={{ fontFamily: "Lato, sans-serif", fontSize: 13, flexShrink: 0, alignSelf: "flex-start", mt: { md: "4px" } }}
+          sx={{ fontFamily: "Lato, sans-serif", fontSize: 13, flexShrink: 0, alignSelf: "flex-start", mt: "4px" }}
         />
       </div>
       <div className="flex items-center overflow-x-auto no-scrollbar">

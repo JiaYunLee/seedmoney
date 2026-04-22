@@ -382,14 +382,18 @@ function Step3({
   gardenState, setGardenState,
   gardenCountry, setGardenCountry,
   projectCategory, setProjectCategory,
+  projectCategoryOther, setProjectCategoryOther,
   beneficiaryPops, setBeneficiaryPops,
+  beneficiaryOther, setBeneficiaryOther,
   statesMap, countries,
 }: {
   gardenCity: string; setGardenCity: (v: string) => void;
   gardenState: string; setGardenState: (v: string) => void;
   gardenCountry: string; setGardenCountry: (v: string) => void;
   projectCategory: string; setProjectCategory: (v: string) => void;
+  projectCategoryOther: string; setProjectCategoryOther: (v: string) => void;
   beneficiaryPops: string[]; setBeneficiaryPops: (v: string[]) => void;
+  beneficiaryOther: string; setBeneficiaryOther: (v: string) => void;
   statesMap: Record<string, GeoOption[]>;
   countries: GeoOption[];
 }) {
@@ -405,7 +409,19 @@ function Step3({
     <div className="flex flex-col gap-4 w-full">
       <SectionCard title="Garden Location" required>
         <div className="flex flex-col gap-4 w-full">
-          <StdField label="City" value={gardenCity} onChange={setGardenCity} />
+          <TextField
+            select
+            variant="standard"
+            label="Country"
+            value={gardenCountry}
+            onChange={(e) => setGardenCountry(e.target.value)}
+            fullWidth
+            sx={fieldSx}
+          >
+            {countries.map(({ code, name }) => (
+              <MenuItem key={code} value={code}>{name}</MenuItem>
+            ))}
+          </TextField>
           <TextField
             select
             variant="standard"
@@ -420,37 +436,39 @@ function Step3({
               <MenuItem key={code} value={code}>{name}</MenuItem>
             ))}
           </TextField>
-          <TextField
-            select
-            variant="standard"
-            label="Country"
-            value={gardenCountry}
-            onChange={(e) => setGardenCountry(e.target.value)}
-            fullWidth
-            sx={fieldSx}
-          >
-            {countries.map(({ code, name }) => (
-              <MenuItem key={code} value={code}>{name}</MenuItem>
-            ))}
-          </TextField>
+          <StdField label="City" value={gardenCity} onChange={setGardenCity} />
         </div>
       </SectionCard>
 
       <SectionCard title="Primary Project Category" required>
         <div className="flex flex-col gap-0">
           <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">Select one:</p>
-          {PROJECT_CATEGORIES.map((cat) => (
-            <label key={cat} className="flex items-center gap-2 cursor-pointer py-1">
-              <input
-                type="radio"
-                name="category"
-                checked={projectCategory === cat}
-                onChange={() => setProjectCategory(cat)}
-                className="accent-[#2d7a45] size-4"
-              />
-              <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{cat}</span>
-            </label>
-          ))}
+          {PROJECT_CATEGORIES.map((cat) => {
+            const isOther = cat === "Other (please specify)";
+            return (
+              <label key={cat} className="flex items-center gap-2 cursor-pointer py-1">
+                <input
+                  type="radio"
+                  name="category"
+                  checked={projectCategory === cat}
+                  onChange={() => setProjectCategory(cat)}
+                  className="accent-[#2d7a45] size-4 shrink-0"
+                />
+                {isOther && projectCategory === cat ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={projectCategoryOther}
+                    onChange={(e) => setProjectCategoryOther(e.target.value)}
+                    placeholder="Please specify"
+                    className="flex-1 text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-b border-[rgba(0,0,0,0.42)] focus:border-[#2d7a45] outline-none bg-transparent pb-[2px]"
+                  />
+                ) : (
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{cat}</span>
+                )}
+              </label>
+            );
+          })}
         </div>
       </SectionCard>
 
@@ -459,19 +477,33 @@ function Step3({
           <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">
             Select all that apply:
           </p>
-          {BENEFICIARY_POPULATIONS.map((pop) => (
-            <label key={pop} className="flex items-center gap-0 cursor-pointer py-1">
-              <div className="flex items-center p-[9px] shrink-0">
-                <input
-                  type="checkbox"
-                  checked={beneficiaryPops.includes(pop)}
-                  onChange={() => togglePop(pop)}
-                  className="size-[18px] accent-[#2d7a45] cursor-pointer"
-                />
-              </div>
-              <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{pop}</span>
-            </label>
-          ))}
+          {BENEFICIARY_POPULATIONS.map((pop) => {
+            const isOther = pop === "Other (please specify)";
+            return (
+              <label key={pop} className="flex items-center gap-0 cursor-pointer py-1">
+                <div className="flex items-center p-[9px] shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={beneficiaryPops.includes(pop)}
+                    onChange={() => togglePop(pop)}
+                    className="size-[18px] accent-[#2d7a45] cursor-pointer"
+                  />
+                </div>
+                {isOther && beneficiaryPops.includes(pop) ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={beneficiaryOther}
+                    onChange={(e) => setBeneficiaryOther(e.target.value)}
+                    placeholder="Please specify"
+                    className="flex-1 text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-b border-[rgba(0,0,0,0.42)] focus:border-[#2d7a45] outline-none bg-transparent pb-[2px]"
+                  />
+                ) : (
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{pop}</span>
+                )}
+              </label>
+            );
+          })}
         </div>
       </SectionCard>
     </div>
@@ -1156,7 +1188,8 @@ type Step6Props = {
   campaignTitle: string; peopleCount: string; gardenSize: string;
   gardenType: string; fundraisingGoal: string;
   gardenCity: string; gardenState: string; gardenCountry: string;
-  projectCategory: string; beneficiaryPops: string[];
+  projectCategory: string; projectCategoryOther: string;
+  beneficiaryPops: string[]; beneficiaryOther: string;
   gardenStory1: string; gardenStory2: string; gardenStory3: string; gardenStory4: string;
   mainPhoto: File | null; supportingPhotos: File[];
   orgName: string; orgEIN: string;
@@ -1170,7 +1203,7 @@ type Step6Props = {
 function Step6(props: Step6Props) {
   const {
     campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
-    gardenCity, gardenState, gardenCountry, projectCategory, beneficiaryPops,
+    gardenCity, gardenState, gardenCountry, projectCategory, projectCategoryOther, beneficiaryPops, beneficiaryOther,
     gardenStory1, gardenStory2, gardenStory3, gardenStory4,
     mainPhoto, supportingPhotos,
     orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
@@ -1230,7 +1263,9 @@ function Step6(props: Step6Props) {
         {projectCategory ? (
           <div className="flex items-center gap-2">
             <input type="radio" readOnly checked onChange={() => {}} className="accent-[#2d7a45] size-4" />
-            <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{projectCategory}</span>
+            <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
+              {projectCategory === "Other (please specify)" && projectCategoryOther ? projectCategoryOther : projectCategory}
+            </span>
           </div>
         ) : (
           <p className="text-[14px] text-[#d32f2f]">No category selected</p>
@@ -1243,7 +1278,9 @@ function Step6(props: Step6Props) {
             {beneficiaryPops.map((pop) => (
               <div key={pop} className="flex items-center gap-2">
                 <input type="checkbox" readOnly checked onChange={() => {}} className="size-[18px] accent-[#2d7a45]" />
-                <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{pop}</span>
+                <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
+                  {pop === "Other (please specify)" && beneficiaryOther ? beneficiaryOther : pop}
+                </span>
               </div>
             ))}
           </div>
@@ -1367,7 +1404,9 @@ export default function ApplicationPage() {
   const [gardenState, setGardenState] = useState("");
   const [gardenCountry, setGardenCountry] = useState("US");
   const [projectCategory, setProjectCategory] = useState("");
+  const [projectCategoryOther, setProjectCategoryOther] = useState("");
   const [beneficiaryPops, setBeneficiaryPops] = useState<string[]>([]);
+  const [beneficiaryOther, setBeneficiaryOther] = useState("");
   // Step 4
   const [gardenStory1, setGardenStory1] = useState("");
   const [gardenStory2, setGardenStory2] = useState("");
@@ -1441,7 +1480,7 @@ export default function ApplicationPage() {
   // Keep ref current every render so the interval always has fresh values
   draftRef.current = {
     step, checked, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
-    gardenCity, gardenState, gardenCountry, projectCategory, beneficiaryPops,
+    gardenCity, gardenState, gardenCountry, projectCategory, projectCategoryOther, beneficiaryPops, beneficiaryOther,
     gardenStory1, gardenStory2, gardenStory3, gardenStory4,
     orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
     firstName, lastName, contactEmail, contactRole,
@@ -1481,7 +1520,9 @@ export default function ApplicationPage() {
       setGardenState(d.gardenState ?? "");
       setGardenCountry(d.gardenCountry ?? "US");
       setProjectCategory(d.projectCategory ?? "");
+      setProjectCategoryOther(d.projectCategoryOther ?? "");
       setBeneficiaryPops(d.beneficiaryPops ?? []);
+      setBeneficiaryOther(d.beneficiaryOther ?? "");
       setGardenStory1(d.gardenStory1 ?? "");
       setGardenStory2(d.gardenStory2 ?? "");
       setGardenStory3(d.gardenStory3 ?? "");
@@ -1532,7 +1573,7 @@ export default function ApplicationPage() {
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, checked, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
-      gardenCity, gardenState, gardenCountry, projectCategory, beneficiaryPops,
+      gardenCity, gardenState, gardenCountry, projectCategory, projectCategoryOther, beneficiaryPops, beneficiaryOther,
       gardenStory1, gardenStory2, gardenStory3, gardenStory4,
       orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
       firstName, lastName, contactEmail, contactRole]);
@@ -1721,8 +1762,8 @@ export default function ApplicationPage() {
                 <span className="text-[12px] leading-[1.33] text-[#666]">Exit</span>
               </button>
               <div className="flex items-center gap-2">
-                <IconCloudUpload size={16} color="#666" className="shrink-0" />
-                <p className="text-[12px] leading-[1.33] text-[#666]">
+                <IconCloudUpload size={16} color={savedAt ? "#1a4a28" : "#666"} className="shrink-0" />
+                <p className={`text-[12px] leading-[1.33] ${savedAt ? "text-[#1a4a28]" : "text-[#666]"}`}>
                   {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
                 </p>
               </div>
@@ -1765,8 +1806,8 @@ export default function ApplicationPage() {
 
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 px-2">
-                  <IconCloudUpload size={20} color="#666" className="shrink-0" />
-                  <p className="text-[14px] leading-[1.33] text-[#666]">
+                  <IconCloudUpload size={20} color={savedAt ? "#1a4a28" : "#666"} className="shrink-0" />
+                  <p className={`text-[14px] leading-[1.33] ${savedAt ? "text-[#1a4a28]" : "text-[#666]"}`}>
                     {savedAt ? `Auto saved at ${savedAt}` : "Not yet saved"}
                   </p>
                 </div>
@@ -1797,7 +1838,9 @@ export default function ApplicationPage() {
                 gardenState={gardenState} setGardenState={setGardenState}
                 gardenCountry={gardenCountry} setGardenCountry={setGardenCountry}
                 projectCategory={projectCategory} setProjectCategory={setProjectCategory}
+                projectCategoryOther={projectCategoryOther} setProjectCategoryOther={setProjectCategoryOther}
                 beneficiaryPops={beneficiaryPops} setBeneficiaryPops={setBeneficiaryPops}
+                beneficiaryOther={beneficiaryOther} setBeneficiaryOther={setBeneficiaryOther}
                 statesMap={statesMap} countries={countries}
               />}
               {step === 3 && <Step4
@@ -1827,7 +1870,8 @@ export default function ApplicationPage() {
                 campaignTitle={campaignTitle} peopleCount={peopleCount}
                 gardenSize={gardenSize} gardenType={gardenType} fundraisingGoal={fundraisingGoal}
                 gardenCity={gardenCity} gardenState={gardenState} gardenCountry={gardenCountry}
-                projectCategory={projectCategory} beneficiaryPops={beneficiaryPops}
+                projectCategory={projectCategory} projectCategoryOther={projectCategoryOther}
+                beneficiaryPops={beneficiaryPops} beneficiaryOther={beneficiaryOther}
                 gardenStory1={gardenStory1} gardenStory2={gardenStory2}
                 gardenStory3={gardenStory3} gardenStory4={gardenStory4}
                 mainPhoto={mainPhoto} supportingPhotos={supportingPhotos}
