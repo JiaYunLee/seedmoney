@@ -135,6 +135,7 @@ function StdField({
   label,
   type = "text",
   helperText,
+  placeholder,
   value,
   onChange,
   maxLength,
@@ -142,11 +143,16 @@ function StdField({
   label: string;
   type?: string;
   helperText?: string;
+  placeholder?: string;
   value?: string;
   onChange?: (v: string) => void;
   maxLength?: number;
 }) {
   const controlled = value !== undefined && onChange !== undefined;
+  const inputProps: Record<string, unknown> = {};
+  if (type === "number") { inputProps.min = 0; inputProps.step = 1; }
+  if (maxLength) inputProps.maxLength = maxLength;
+  if (placeholder) inputProps.placeholder = placeholder;
   return (
     <div className="flex flex-col w-full group">
       <p className="text-[12px] leading-[1.4] tracking-[0.01em] text-[rgba(0,0,0,0.6)] group-focus-within:text-[#2d7a45] transition-colors">
@@ -159,9 +165,7 @@ function StdField({
         fullWidth
         {...(type !== "number" && { multiline: true })}
         sx={fieldSx}
-        slotProps={type === "number"
-          ? { htmlInput: { min: 0, step: 1 } }
-          : maxLength ? { htmlInput: { maxLength } } : undefined}
+        slotProps={Object.keys(inputProps).length ? { htmlInput: inputProps } : undefined}
         {...(controlled ? { value, onChange: (e) => onChange(e.target.value) } : {})}
       />
     </div>
@@ -206,11 +210,11 @@ function AiOptInModal({ onClose, onOptIn }: { onClose: () => void; onOptIn: () =
       style={{ background: "rgba(0,0,0,0.55)" }}
     >
       <div
-        className="bg-white rounded-[4px] flex flex-col w-full max-w-[600px] overflow-hidden"
+        className="bg-white rounded-[4px] flex flex-col w-full max-w-[600px] max-h-[90vh] overflow-hidden"
         style={{ boxShadow: "0px 11px 15px -7px rgba(0,0,0,0.2), 0px 24px 38px 3px rgba(0,0,0,0.14), 0px 9px 46px 8px rgba(0,0,0,0.12)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-6 py-4 shrink-0">
           <p className="font-bold text-[20px] leading-[1.6] text-[#123a1e]">AI Editing Opt-In Statement</p>
           <button
             onClick={onClose}
@@ -224,7 +228,7 @@ function AiOptInModal({ onClose, onOptIn }: { onClose: () => void; onOptIn: () =
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-5 text-[16px] leading-[1.5] text-black">
+        <div className="px-6 pb-5 text-[16px] leading-[1.5] text-black overflow-y-auto flex-1">
           <p>
             If you opt in, any text from your application that is displayed on the publicly facing campaign page may be processed using GPT-5-mini for the purpose of light editing and polishing, such as grammar and clarity improvements, while preserving your original style, intent, and content. No substantive changes will be made.
           </p>
@@ -245,7 +249,7 @@ function AiOptInModal({ onClose, onOptIn }: { onClose: () => void; onOptIn: () =
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2 p-2">
+        <div className="flex items-center justify-end gap-2 p-2 shrink-0">
           <button
             onClick={onClose}
             className="px-2 py-[10px] rounded-[8px] font-bold text-[14px] leading-[16px] uppercase text-[#666] hover:text-[rgba(0,0,0,0.87)] transition-colors"
@@ -1143,7 +1147,13 @@ function Step5({
       <SectionCard title="Organization Information" required>
         <div className="flex flex-col gap-4 w-full">
           <StdField label="Legal Name of Beneficiary Organization" value={orgName} onChange={setOrgName} />
-          <StdField label="EIN or Public-Sector Identifier" value={orgEIN} onChange={setOrgEIN} />
+          <StdField
+            label="EIN or Public-Sector Identifier"
+            value={orgEIN}
+            onChange={setOrgEIN}
+            placeholder="e.g., 52-3456789"
+            helperText="For US nonprofits, your 9-digit IRS EIN. For schools or government entities, your institutional identifier."
+          />
         </div>
       </SectionCard>
 
