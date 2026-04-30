@@ -23,7 +23,7 @@ import TextField from "@mui/material/TextField";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 
-// ── snackbar slide transition (right → left, ease-out-back) ──────────────────
+// ── snackbar slide transition ─────────────────────────────────────────────────
 function SlideLeft(props: SlideProps) {
   return <Slide {...props} direction="left" />;
 }
@@ -162,7 +162,6 @@ function NewCampaignModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-[4px] shadow-[0px_9px_46px_8px_rgba(0,0,0,0.12),0px_24px_38px_3px_rgba(0,0,0,0.14),0px_11px_15px_-7px_rgba(0,0,0,0.2)] w-[657px] max-w-[90vw] flex flex-col overflow-hidden">
-        {/* Title */}
         <div className="flex items-center justify-between px-6 py-4">
           <p className="font-bold text-[20px] leading-[1.6] text-[#1a4a28]">
             SeedMoney Challenge Application
@@ -174,8 +173,6 @@ function NewCampaignModal({
             <IconClose size={24} color="rgba(0,0,0,0.54)" />
           </button>
         </div>
-
-        {/* Content */}
         <div className="flex flex-col gap-2 px-6 pb-5 font-normal text-[16px] leading-[1.5]">
           <p className="text-[#666]">
             SeedMoney supports nonprofit and community-based food garden
@@ -193,8 +190,6 @@ function NewCampaignModal({
             Most applicants complete this application in 20–30 minutes.
           </p>
         </div>
-
-        {/* Actions */}
         <div className="flex items-center justify-end p-2">
           <button
             onClick={onStart}
@@ -207,9 +202,6 @@ function NewCampaignModal({
     </div>
   );
 }
-
-// ── sidebar: imported from @/app/components/Sidebar ──────────────────────────
-
 
 // ── stats cards ───────────────────────────────────────────────────────────────
 function StatsCards() {
@@ -274,153 +266,7 @@ function StatsCards() {
   );
 }
 
-// ── overview tab ──────────────────────────────────────────────────────────────
-function OverviewTab() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [helpTopic, setHelpTopic] = useState("");
-  const [helpDetail, setHelpDetail] = useState("");
-  const [showSubmitted, setShowSubmitted] = useState(false);
-  const [externalUrl, setExternalUrl] = useState<string | null>(null);
-  const canSubmit = helpTopic !== "" && helpDetail.trim() !== "";
-
-  function handleSubmit() {
-    setShowSubmitted(true);
-    setHelpTopic("");
-    setHelpDetail("");
-  }
-
-  return (
-    <div className="flex flex-col gap-4 md:gap-6">
-      <StatsCards />
-      {/* FAQ */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
-        <div className="flex items-end gap-5">
-          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">
-            Frequently Asked Questions
-          </p>
-          <button className="flex items-center gap-1 shrink-0" onClick={() => setExternalUrl("https://donate.seedmoney.org/faq")}>
-            <span className="text-[#0288d1] text-[16px] leading-[1.5] underline">View more</span>
-            <IconArrowSquareOut size={24} color="#0288d1" />
-          </button>
-        </div>
-        <div className="flex flex-col gap-4">
-          {FAQ_ITEMS.map((item, i) => {
-            const isOpen = openFaq === i;
-            return (
-              <div
-                key={i}
-                className="border border-[rgba(0,0,0,0.1)] rounded-[8px] overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
-                >
-                  <p className="font-bold text-[16px] leading-[1.5] text-black">{item.q}</p>
-                  <div
-                    className={`shrink-0 transition-transform duration-200 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
-                  >
-                    <IconCaretDown size={24} color="rgba(0,0,0,0.54)" />
-                  </div>
-                </button>
-                {isOpen && (
-                  <div className="px-6 pb-6">
-                    <p className="text-[16px] leading-[1.5] text-[#666]">{item.a}</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Need Help */}
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
-        <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">Need Help?</p>
-          <p className="text-[14px] md:text-[16px] leading-[1.5] text-[#666]">
-            Send a request to the SeedMoney team and we&apos;ll get back to you within one business day.
-          </p>
-        </div>
-        <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">What do you need help with?</p>
-          <FormControl variant="standard" fullWidth>
-            <InputLabel sx={{ fontFamily: "Lato, sans-serif" }}>Choose a topic</InputLabel>
-            <Select
-              value={helpTopic}
-              onChange={(e) => setHelpTopic(e.target.value)}
-              sx={{
-                fontFamily: "Lato, sans-serif",
-                fontSize: 16,
-                "&:after": { borderBottomColor: "#2d7a45" },
-              }}
-            >
-              <MuiMenuItem value="campaign-edit" sx={{ fontFamily: "Lato, sans-serif" }}>Request a campaign page edit</MuiMenuItem>
-              <MuiMenuItem value="stretch-goal" sx={{ fontFamily: "Lato, sans-serif" }}>Request a stretch goal</MuiMenuItem>
-              <MuiMenuItem value="account-issue" sx={{ fontFamily: "Lato, sans-serif" }}>Request an account issue</MuiMenuItem>
-              <MuiMenuItem value="something-else" sx={{ fontFamily: "Lato, sans-serif" }}>Something else</MuiMenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        <div className="flex flex-col gap-[10px]">
-          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">Tell us more</p>
-          <input
-            type="text"
-            value={helpDetail}
-            onChange={(e) => setHelpDetail(e.target.value)}
-            placeholder="Describe what you need, the more detail, the faster we can help"
-            className="w-full text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-0 border-b border-[rgba(0,0,0,0.42)] bg-transparent pb-[6px] focus:border-[#2d7a45] transition-colors placeholder:text-[rgba(0,0,0,0.38)]"
-          />
-        </div>
-        <button
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-          className={`self-start flex items-center gap-2 px-5 py-[10px] rounded-[8px] transition-colors font-bold text-[16px] leading-[26px] uppercase ${
-            canSubmit
-              ? "bg-[#2d7a45] text-white hover:bg-[#245f37] cursor-pointer"
-              : "bg-[#e0e0e0] text-[#a6a6a6] cursor-not-allowed"
-          }`}
-        >
-          Submit Request
-        </button>
-      </div>
-
-      <Snackbar
-        open={showSubmitted}
-        autoHideDuration={3000}
-        onClose={() => setShowSubmitted(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        TransitionComponent={SlideLeft}
-        TransitionProps={{
-          style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" },
-        }}
-      >
-        <MuiAlert
-          severity="success"
-          onClose={() => setShowSubmitted(false)}
-          sx={{
-            backgroundColor: "#edf7ed",
-            color: "#1e4620",
-            fontFamily: "Lato, sans-serif",
-            "& .MuiAlert-icon": { color: "#2e7d32" },
-            "& .MuiAlertTitle-root": { color: "#1e4620", fontWeight: 600, fontFamily: "Lato, sans-serif" },
-            "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" },
-          }}
-        >
-          <AlertTitle>Request submitted</AlertTitle>
-          We&apos;ve received your request and will get back to you as soon as possible
-        </MuiAlert>
-      </Snackbar>
-
-      {externalUrl && (
-        <ExternalLinkModal url={externalUrl} onClose={() => setExternalUrl(null)} />
-      )}
-    </div>
-  );
-}
-
-// ── donors tab ────────────────────────────────────────────────────────────────
+// ── donation list section ─────────────────────────────────────────────────────
 type DonorRow = typeof DONORS[0];
 type SortField = "id" | "amount_asc" | "amount_desc" | "contributor" | "email";
 
@@ -462,7 +308,7 @@ function EmailCell({ email, onCopy }: { email: string; onCopy: (e: string) => vo
   );
 }
 
-function DonorsTab() {
+function DonationListSection() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("id");
   const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
@@ -520,11 +366,8 @@ function DonorsTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      <StatsCards />
-
       {/* ── mobile card layout ─────────────────────────────────── */}
       <div className="md:hidden">
-        {/* header */}
         <div className="flex items-center justify-between pb-4">
           <div className="flex flex-col">
             <span className="font-bold text-[20px] leading-[1.334] text-black" style={{ fontFamily: "Lato, sans-serif" }}>Donation List</span>
@@ -535,7 +378,6 @@ function DonorsTab() {
           </button>
         </div>
 
-        {/* search + sort row */}
         <div className="flex items-center gap-[10px] pb-4">
           <div className="flex-1 flex items-center bg-white border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] py-[8px] gap-[8px]">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
@@ -588,17 +430,14 @@ function DonorsTab() {
           </Menu>
         </div>
 
-        {/* cards */}
         <div className="flex flex-col gap-3 pb-5">
           {sorted.map((row) => (
             <div key={row.id} className="bg-white border border-[rgba(0,0,0,0.1)] rounded-[16px] overflow-hidden">
-              {/* card header */}
               <div className="px-[20px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
                 <p className="font-bold text-[14px] leading-[1.5] text-black" style={{ fontFamily: "Lato, sans-serif" }}>
                   ID: {row.id}
                 </p>
               </div>
-              {/* card rows */}
               <div className="px-[20px]">
                 <div className="flex items-center gap-[10px] py-[10px] border-b border-[rgba(0,0,0,0.23)]">
                   <span className="w-[140px] shrink-0 text-[14px] leading-[1.5] text-[#666]" style={{ fontFamily: "Lato, sans-serif" }}>Amount</span>
@@ -703,146 +542,130 @@ function DonorsTab() {
   );
 }
 
-// ── analytics tab ─────────────────────────────────────────────────────────────
-// ── chart data (Nov 15 – Dec 15 x-axis, data only through Nov 23 today) ───────
+// ── analytics chart section ───────────────────────────────────────────────────
 const CHART_DATES = [
   "Nov 15","Nov 16","Nov 17","Nov 18","Nov 19","Nov 20","Nov 21","Nov 22",
   "Nov 23","Nov 24","Nov 25","Nov 26","Nov 27","Nov 28","Nov 29","Nov 30",
   "Dec 1","Dec 2","Dec 3","Dec 4","Dec 5","Dec 6","Dec 7","Dec 8","Dec 9",
   "Dec 10","Dec 11","Dec 12","Dec 13","Dec 14","Dec 15",
 ];
-// Daily: Nov15–Nov30 (today), null Dec1 onwards
-// Nov15:$50 Nov17:$25 Nov19:$35 Nov21:$30 Nov24:$40 Nov27:$26 Nov30:$25 → total $231
 const _daily = [50, 0, 25, 0, 35, 0, 30, 0, 0, 40, 0, 0, 26, 0, 0, 25];
 const _total = [50, 50, 75, 75, 110, 110, 140, 140, 140, 180, 180, 180, 206, 206, 206, 231];
 const NULL_TAIL = Array(CHART_DATES.length - _daily.length).fill(null);
 const DAILY_EARNINGS: (number | null)[] = [..._daily, ...NULL_TAIL];
 const TOTAL_EARNINGS: (number | null)[] = [..._total, ...NULL_TAIL];
-// Show every 5th label on x-axis
 const xTickInterval = (_: string, i: number) => i % 5 === 0;
 
-function AnalyticsTab() {
+function AnalyticsChartSection() {
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
 
   useEffect(() => {
     const el = chartRef.current;
     if (!el) return;
-    // Read the layout width (overflow-hidden ensures SVG can't inflate this)
     const observer = new ResizeObserver(() => {
       setChartWidth(el.getBoundingClientRect().width);
     });
     observer.observe(el);
-    // Measure immediately after mount
     setChartWidth(el.getBoundingClientRect().width);
     return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="flex flex-col gap-6">
-      <StatsCards />
-      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 px-4 md:px-[25px] py-6 w-full">
-        {/* Header: title + custom legend */}
-        <div className="flex items-start justify-between flex-wrap gap-2">
-          <div className="flex flex-col">
-            <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Earnings Trend</p>
-            <p className="text-[14px] leading-[1.33] text-[#6a7282]">Your earnings over the campaign</p>
+    <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 px-4 md:px-[25px] py-6 w-full">
+      <div className="flex items-start justify-between flex-wrap gap-2">
+        <div className="flex flex-col">
+          <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">Earnings Trend</p>
+          <p className="text-[14px] leading-[1.33] text-[#6a7282]">Your earnings over the campaign</p>
+        </div>
+        <div className="flex gap-4 items-center">
+          <div className="flex gap-2 items-center">
+            <IconLegendStroke width={20} color="#00a87e" />
+            <span className="text-[14px] text-[#717182]">Daily Earnings</span>
           </div>
-          <div className="flex gap-4 items-center">
-            <div className="flex gap-2 items-center">
-              <IconLegendStroke width={20} color="#00a87e" />
-              <span className="text-[14px] text-[#717182]">Daily Earnings</span>
-            </div>
-            <div className="flex gap-2 items-center">
-              <IconLegendStroke width={20} color="#5c6bc0" />
-              <span className="text-[14px] text-[#717182]">Total Earnings</span>
-            </div>
+          <div className="flex gap-2 items-center">
+            <IconLegendStroke width={20} color="#5c6bc0" />
+            <span className="text-[14px] text-[#717182]">Total Earnings</span>
           </div>
         </div>
+      </div>
 
-        {/* Tooltip font override — rendered in a portal outside the chart container */}
-        <style>{`.MuiChartsTooltip-root, .MuiChartsTooltip-root * { font-family: Lato, sans-serif !important; }`}</style>
+      <style>{`.MuiChartsTooltip-root, .MuiChartsTooltip-root * { font-family: Lato, sans-serif !important; }`}</style>
 
-        {/* Chart with overlaid goal badge */}
-        <div className="relative w-full overflow-hidden" ref={chartRef}>
-          <LineChart
-            width={chartWidth || undefined}
-            height={320}
-            margin={{ top: 20, bottom: 40, left: 0, right: 36 }}
-            series={[
-              {
-                id: "daily",
-                data: DAILY_EARNINGS,
-                label: "Daily Earnings",
-                area: true,
-                curve: "natural",
-                color: "#00a87e",
-                showMark: false,
-                connectNulls: false,
-                valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
-              },
-              {
-                id: "total",
-                data: TOTAL_EARNINGS,
-                label: "Total Earnings",
-                area: true,
-                curve: "natural",
-                color: "#5c6bc0",
-                showMark: false,
-                connectNulls: false,
-                valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
-              },
-            ]}
-            xAxis={[{
-              data: CHART_DATES,
-              scaleType: "point",
-              tickInterval: xTickInterval,
-              tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
-            }]}
-            yAxis={[{
-              min: 0,
-              max: 700,
-              width: 62,
-              valueFormatter: (v: number) => `$${v.toLocaleString()}`,
-              tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
-            }]}
-            sx={{
-              "& .MuiAreaElement-series-daily": { fill: "url(#dailyGrad)" },
-              "& .MuiAreaElement-series-total": { fill: "url(#totalGrad)" },
-              "& .MuiLineElement-root": { strokeWidth: 2 },
-              "& .MuiChartsGrid-line": { stroke: "#e5e7eb", strokeDasharray: "4 4" },
-              "& .MuiChartsLegend-root": { display: "none" },
-              fontFamily: "Lato, sans-serif",
-              "& text": { fontFamily: "Lato, sans-serif", fill: "#6b7280", fontSize: 12 },
-            }}
-            grid={{ horizontal: true, vertical: true }}
-          >
-            <defs>
-              <linearGradient id="dailyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00a87e" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#00a87e" stopOpacity="0.0" />
-              </linearGradient>
-              <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#5c6bc0" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#5c6bc0" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            <ChartsReferenceLine
-              y={600}
-              lineStyle={{ stroke: "#2e7d32", strokeDasharray: "6 3", strokeWidth: 1.5 }}
-            />
-          </LineChart>
+      <div className="relative w-full overflow-hidden" ref={chartRef}>
+        <LineChart
+          width={chartWidth || undefined}
+          height={320}
+          margin={{ top: 20, bottom: 40, left: 0, right: 36 }}
+          series={[
+            {
+              id: "daily",
+              data: DAILY_EARNINGS,
+              label: "Daily Earnings",
+              area: true,
+              curve: "natural",
+              color: "#00a87e",
+              showMark: false,
+              connectNulls: false,
+              valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
+            },
+            {
+              id: "total",
+              data: TOTAL_EARNINGS,
+              label: "Total Earnings",
+              area: true,
+              curve: "natural",
+              color: "#5c6bc0",
+              showMark: false,
+              connectNulls: false,
+              valueFormatter: (v: number | null) => v !== null ? `$${v.toLocaleString()}` : "",
+            },
+          ]}
+          xAxis={[{
+            data: CHART_DATES,
+            scaleType: "point",
+            tickInterval: xTickInterval,
+            tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
+          }]}
+          yAxis={[{
+            min: 0,
+            max: 700,
+            width: 62,
+            valueFormatter: (v: number) => `$${v.toLocaleString()}`,
+            tickLabelStyle: { fontFamily: "Lato, sans-serif", fontSize: 12, fill: "#6b7280" },
+          }]}
+          sx={{
+            "& .MuiAreaElement-series-daily": { fill: "url(#dailyGrad)" },
+            "& .MuiAreaElement-series-total": { fill: "url(#totalGrad)" },
+            "& .MuiLineElement-root": { strokeWidth: 2 },
+            "& .MuiChartsGrid-line": { stroke: "#e5e7eb", strokeDasharray: "4 4" },
+            "& .MuiChartsLegend-root": { display: "none" },
+            fontFamily: "Lato, sans-serif",
+            "& text": { fontFamily: "Lato, sans-serif", fill: "#6b7280", fontSize: 12 },
+          }}
+          grid={{ horizontal: true, vertical: true }}
+        >
+          <defs>
+            <linearGradient id="dailyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#00a87e" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#00a87e" stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#5c6bc0" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#5c6bc0" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+          <ChartsReferenceLine
+            y={600}
+            lineStyle={{ stroke: "#2e7d32", strokeDasharray: "6 3", strokeWidth: 1.5 }}
+          />
+        </LineChart>
 
-          {/* Goal badge — aligned with y=600 reference line
-              Chart area: top=20px, plot height=270px, max=700
-              from top = 20 + (1 - 600/700) * 270 = 20 + 38.6 ≈ 59px
-              Badge height ≈ 26px → top = 59 - 13 = 46px */}
-          <div
-            className="absolute border border-[#2e7d32] text-[#2e7d32] text-[13px] px-3 py-0.5 rounded-full whitespace-nowrap bg-white pointer-events-none"
-            style={{ top: 46, right: 24 }}
-          >
-            Your Goal: $600
-          </div>
+        <div
+          className="absolute border border-[#2e7d32] text-[#2e7d32] text-[13px] px-3 py-0.5 rounded-full whitespace-nowrap bg-white pointer-events-none"
+          style={{ top: 46, right: 24 }}
+        >
+          Your Goal: $600
         </div>
       </div>
     </div>
@@ -927,51 +750,122 @@ function ReviewState({ campaignName }: { campaignName: string }) {
   );
 }
 
+// ── active state ──────────────────────────────────────────────────────────────
+type ActiveSectionKey = "overview" | "donation" | "analytics" | "help";
+
+const ACTIVE_TABS: { key: ActiveSectionKey; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "donation", label: "Donation" },
+  { key: "analytics", label: "Analytics" },
+  { key: "help", label: "Help" },
+];
+
 function ActiveState({
   campaignName,
-  activeTab,
-  onTabChange,
   onCopyLink,
 }: {
   campaignName: string;
-  activeTab: "overview" | "donors" | "analytics";
-  onTabChange: (t: "overview" | "donors" | "analytics") => void;
   onCopyLink: () => void;
 }) {
-  const TABS: { key: "overview" | "donors" | "analytics"; label: string }[] = [
-    { key: "overview", label: "Overview" },
-    { key: "donors", label: "Donation" },
-    { key: "analytics", label: "Analytics" },
-  ];
+  const [activeSection, setActiveSection] = useState<ActiveSectionKey>("overview");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [helpTopic, setHelpTopic] = useState("");
+  const [helpDetail, setHelpDetail] = useState("");
+  const [showSubmitted, setShowSubmitted] = useState(false);
+  const [externalUrl, setExternalUrl] = useState<string | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const scrollLockRef = useRef(false);
+  const scrollLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const canSubmit = helpTopic !== "" && helpDetail.trim() !== "";
+
+  function handleSubmit() {
+    setShowSubmitted(true);
+    setHelpTopic("");
+    setHelpDetail("");
+  }
+
+  function scrollToSection(key: ActiveSectionKey) {
+    const el = document.getElementById(`section-${key}`);
+    if (!el) return;
+    let container: HTMLElement | null = el.parentElement;
+    while (container && getComputedStyle(container).overflowY !== "auto") {
+      container = container.parentElement;
+    }
+    if (container) {
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
+      const elTop = el.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+      container.scrollBy({ top: elTop - containerTop - headerHeight - 10, behavior: "smooth" });
+    }
+    setActiveSection(key);
+    // Suppress observer updates while the smooth scroll is in flight
+    scrollLockRef.current = true;
+    if (scrollLockTimerRef.current) clearTimeout(scrollLockTimerRef.current);
+    scrollLockTimerRef.current = setTimeout(() => {
+      scrollLockRef.current = false;
+    }, 800);
+  }
+
+  // Track active section by watching scroll position
+  useEffect(() => {
+    const firstEl = document.getElementById("section-overview");
+    if (!firstEl) return;
+    let container: HTMLElement | null = firstEl.parentElement;
+    while (container && getComputedStyle(container).overflowY !== "auto") {
+      container = container.parentElement;
+    }
+    if (!container) return;
+
+    function handleScroll() {
+      if (scrollLockRef.current) return;
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
+      const threshold = headerHeight + 20;
+      let current: ActiveSectionKey = "overview";
+      for (const { key } of ACTIVE_TABS) {
+        const el = document.getElementById(`section-${key}`);
+        if (el && el.getBoundingClientRect().top <= threshold) {
+          current = key;
+        }
+      }
+      setActiveSection(current);
+    }
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container!.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 flex-1">
-      <div className="flex flex-row items-start justify-between gap-2 md:gap-3">
-        <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
-        <Chip
-          label="Challenge Active"
-          color="success"
-          variant="outlined"
-          size="medium"
-          sx={{ fontFamily: "Lato, sans-serif", fontSize: 13, flexShrink: 0, alignSelf: "flex-start", mt: "4px" }}
-        />
+      {/* ── sticky header: campaign title + tabs ── */}
+      <div ref={headerRef} className="sticky top-0 z-20 bg-[#f6faf9] pt-[60px]">
+        <div className="flex flex-row items-start justify-between gap-2 md:gap-3 pt-2 pb-2">
+          <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#1a4a28]">{campaignName}</p>
+          <Chip
+            label="Challenge Active"
+            color="success"
+            variant="outlined"
+            size="medium"
+            sx={{ fontFamily: "Lato, sans-serif", fontSize: 13, flexShrink: 0, alignSelf: "flex-start", mt: "4px" }}
+          />
+        </div>
+        <div className="flex items-center overflow-x-auto no-scrollbar pb-2">
+          {ACTIVE_TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => scrollToSection(t.key)}
+              className={`px-4 py-[9px] font-bold text-[14px] font-[family-name:var(--font-opensans)] transition-colors whitespace-nowrap ${
+                activeSection === t.key
+                  ? "text-[#1976d2] border-b-2 border-[#1976d2]"
+                  : "text-[rgba(0,0,0,0.6)] hover:text-[rgba(0,0,0,0.87)]"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="flex items-center overflow-x-auto no-scrollbar">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => onTabChange(t.key)}
-            className={`px-4 py-[9px] font-bold text-[14px] font-[family-name:var(--font-opensans)] transition-colors ${
-              activeTab === t.key
-                ? "text-[#1976d2] border-b-2 border-[#1976d2]"
-                : "text-[rgba(0,0,0,0.6)] hover:text-[rgba(0,0,0,0.87)]"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      {/* Mobile buttons — no icons, horizontal scroll, Share uses native share */}
+
+      {/* ── action buttons (mobile) ── */}
       <div className="flex md:hidden flex-nowrap gap-4 items-center overflow-x-auto no-scrollbar">
         <a
           href="https://donate.seedmoney.org/13865/full-belly-community-garden"
@@ -1006,7 +900,7 @@ function ActiveState({
         </a>
       </div>
 
-      {/* Desktop buttons — with icons, wraps */}
+      {/* ── action buttons (desktop) ── */}
       <div className="hidden md:flex flex-wrap gap-4 items-center">
         <a
           href="https://donate.seedmoney.org/13865/full-belly-community-garden"
@@ -1033,12 +927,146 @@ function ActiveState({
           <IconExternalLinkBox size={16} color="#123a1e" className="shrink-0" />
         </a>
       </div>
-      {activeTab === "overview" && <OverviewTab />}
-      {activeTab === "donors" && <DonorsTab />}
-      {activeTab === "analytics" && <AnalyticsTab />}
+
+      {/* ── section: overview (top 3 metrics) ── */}
+      <div id="section-overview" className="scroll-mt-[100px]">
+        <StatsCards />
+      </div>
+
+      {/* ── section: donation list ── */}
+      <div id="section-donation" className="scroll-mt-[100px]">
+        <DonationListSection />
+      </div>
+
+      {/* ── section: analytics chart ── */}
+      <div id="section-analytics" className="scroll-mt-[100px]">
+        <AnalyticsChartSection />
+      </div>
+
+      {/* ── FAQ ── */}
+      <div id="section-help" className="scroll-mt-[100px] bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
+        <div className="flex items-end gap-5">
+          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">
+            Frequently Asked Questions
+          </p>
+          <button className="flex items-center gap-1 shrink-0" onClick={() => setExternalUrl("https://donate.seedmoney.org/faq")}>
+            <span className="text-[#0288d1] text-[16px] leading-[1.5] underline">View more</span>
+            <IconArrowSquareOut size={24} color="#0288d1" />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4">
+          {FAQ_ITEMS.map((item, i) => {
+            const isOpen = openFaq === i;
+            return (
+              <div
+                key={i}
+                className="border border-[rgba(0,0,0,0.1)] rounded-[8px] overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(isOpen ? null : i)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <p className="font-bold text-[16px] leading-[1.5] text-black">{item.q}</p>
+                  <div className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>
+                    <IconCaretDown size={24} color="rgba(0,0,0,0.54)" />
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="px-6 pb-6">
+                    <p className="text-[16px] leading-[1.5] text-[#666]">{item.a}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Need Help ── */}
+      <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl flex flex-col gap-4 md:gap-10 p-[25px]">
+        <div className="flex flex-col gap-[10px]">
+          <p className="font-bold text-[20px] md:text-[24px] leading-[1.334] text-[rgba(0,0,0,0.87)]">Need Help?</p>
+          <p className="text-[14px] md:text-[16px] leading-[1.5] text-[#666]">
+            Send a request to the SeedMoney team and we&apos;ll get back to you within one business day.
+          </p>
+        </div>
+        <div className="flex flex-col gap-[10px]">
+          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">What do you need help with?</p>
+          <FormControl variant="standard" fullWidth>
+            <InputLabel sx={{ fontFamily: "Lato, sans-serif" }}>Choose a topic</InputLabel>
+            <Select
+              value={helpTopic}
+              onChange={(e) => setHelpTopic(e.target.value)}
+              sx={{
+                fontFamily: "Lato, sans-serif",
+                fontSize: 16,
+                "&:after": { borderBottomColor: "#2d7a45" },
+              }}
+            >
+              <MuiMenuItem value="campaign-edit" sx={{ fontFamily: "Lato, sans-serif" }}>Request a campaign page edit</MuiMenuItem>
+              <MuiMenuItem value="stretch-goal" sx={{ fontFamily: "Lato, sans-serif" }}>Request a stretch goal</MuiMenuItem>
+              <MuiMenuItem value="account-issue" sx={{ fontFamily: "Lato, sans-serif" }}>Request an account issue</MuiMenuItem>
+              <MuiMenuItem value="something-else" sx={{ fontFamily: "Lato, sans-serif" }}>Something else</MuiMenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <div className="flex flex-col gap-[10px]">
+          <p className="font-bold text-[14px] md:text-[16px] leading-[1.5] text-black">Tell us more</p>
+          <input
+            type="text"
+            value={helpDetail}
+            onChange={(e) => setHelpDetail(e.target.value)}
+            placeholder="Describe what you need, the more detail, the faster we can help"
+            className="w-full text-[14px] md:text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-0 border-b border-[rgba(0,0,0,0.42)] bg-transparent pb-[6px] focus:border-[#2d7a45] transition-colors placeholder:text-[rgba(0,0,0,0.38)]"
+          />
+        </div>
+        <button
+          disabled={!canSubmit}
+          onClick={handleSubmit}
+          className={`self-start flex items-center gap-2 px-5 py-[10px] rounded-[8px] transition-colors font-bold text-[16px] leading-[26px] uppercase ${
+            canSubmit
+              ? "bg-[#2d7a45] text-white hover:bg-[#245f37] cursor-pointer"
+              : "bg-[#e0e0e0] text-[#a6a6a6] cursor-not-allowed"
+          }`}
+        >
+          Submit Request
+        </button>
+      </div>
+
       <div className="mt-8 pt-5">
         <DashboardFooter />
       </div>
+
+      <Snackbar
+        open={showSubmitted}
+        autoHideDuration={3000}
+        onClose={() => setShowSubmitted(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        TransitionComponent={SlideLeft}
+        TransitionProps={{
+          style: { transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)", transitionDuration: "400ms" },
+        }}
+      >
+        <MuiAlert
+          severity="success"
+          onClose={() => setShowSubmitted(false)}
+          sx={{
+            backgroundColor: "#edf7ed",
+            color: "#1e4620",
+            fontFamily: "Lato, sans-serif",
+            "& .MuiAlert-icon": { color: "#2e7d32" },
+            "& .MuiAlertTitle-root": { color: "#1e4620", fontWeight: 600, fontFamily: "Lato, sans-serif" },
+            "& .MuiAlert-message": { fontFamily: "Lato, sans-serif" },
+          }}
+        >
+          <AlertTitle>Request submitted</AlertTitle>
+          We&apos;ve received your request and will get back to you as soon as possible
+        </MuiAlert>
+      </Snackbar>
+
+      {externalUrl && (
+        <ExternalLinkModal url={externalUrl} onClose={() => setExternalUrl(null)} />
+      )}
     </div>
   );
 }
@@ -1264,7 +1292,6 @@ function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
-// Secret key sequence: type "seed" anywhere to activate the active dashboard state
 const SECRET = "seed";
 
 function DashboardContent() {
@@ -1273,7 +1300,6 @@ function DashboardContent() {
   const state = searchParams.get("state") ?? "empty";
 
   const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "donors" | "analytics">("overview");
   const [showModal, setShowModal] = useState(false);
   const [keyBuffer, setKeyBuffer] = useState("");
   const [draftTitle, setDraftTitle] = useState<string | null>(null);
@@ -1285,10 +1311,8 @@ function DashboardContent() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    // Clean up any stale navigation flag
     sessionStorage.removeItem("seedmoney_from_submit");
 
-    // Restore session data — draft persists until submission
     const rawDraft = sessionStorage.getItem("seedmoney_draft");
     let hasDraftOnMount = false;
     if (rawDraft) {
@@ -1316,7 +1340,6 @@ function DashboardContent() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Ignore key events when user is typing in an input/textarea
       const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea" || tag === "select") return;
 
@@ -1332,7 +1355,6 @@ function DashboardContent() {
   }, [keyBuffer, router]);
 
   const hasDraft = draftTitle != null;
-  const hasPending = pendingCampaigns.length > 0;
 
   function handleNewCampaign() {
     if (hasDraft && state !== "active") return;
@@ -1342,7 +1364,6 @@ function DashboardContent() {
   function handleStartApplication() {
     setShowModal(false);
     if (state === "active") {
-      // Active state uses its own draft key — clear it for a fresh start
       sessionStorage.removeItem("seedmoney_draft_new");
       router.push("/application?from=active");
     } else {
@@ -1378,12 +1399,10 @@ function DashboardContent() {
           mobileOpen={mobileNavOpen}
           onMobileClose={() => setMobileNavOpen(false)}
         />
-        <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-4 md:px-10 pt-[60px] pb-[60px] md:pb-5">
+        <div className={`flex flex-col flex-1 min-w-0 h-full overflow-y-auto px-4 md:px-10 pb-[60px] md:pb-5 ${state === "active" ? "pt-0" : "pt-[60px]"}`}>
           {state === "active" && (
             <ActiveState
               campaignName="Full Belly Community Garden"
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
               onCopyLink={() => {
                 navigator.clipboard.writeText("https://donate.seedmoney.org/13865/full-belly-community-garden");
                 setShowCopied(true);
