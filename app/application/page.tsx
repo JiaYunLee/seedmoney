@@ -191,7 +191,6 @@ function SectionCard({
           <p className="font-bold text-[20px] leading-[1.6] text-[rgba(0,0,0,0.87)]">
             {title}
           </p>
-          {required && <p className="font-bold text-[20px]" style={{ color: "var(--color-error)" }}>*</p>}
         </div>
         {description && (
           <p className="text-[14px] leading-[1.33] text-black">{description}</p>
@@ -370,7 +369,7 @@ function Step2({
         description="This will be the public title of your fundraising campaign. Choose something clear and recognizable, e.g. Fairview Community Garden, Pleasantville Primary School Garden, Holy Jalapeno Church Garden, etc."
       >
         <StdField
-          label="Campaign Title"
+          label="Campaign Title (Required)"
           value={campaignTitle}
           onChange={setCampaignTitle}
           maxLength={60}
@@ -381,20 +380,20 @@ function Step2({
       <SectionCard title="Project Details & Impact" required>
         <div className="flex flex-col gap-4 w-full">
           <StdField
-            label="About how many people will benefit from this garden this year?"
+            label="About how many people will benefit from this garden this year? (Required)"
             type="number"
             value={peopleCount}
             onChange={setPeopleCount}
           />
           <StdField
-            label="Approximate garden size or scope"
+            label="Approximate garden size or scope (Required)"
             helperText="Examples: one raised bed, multiple sites, two-acre farm."
             value={gardenSize}
             onChange={setGardenSize}
           />
           <div className="flex flex-col gap-3">
             <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
-              Is this a new or existing garden?
+              Is this a new or existing garden? (Required)
             </p>
             {(["New garden", "Existing garden"] as const).map((opt) => (
               <label key={opt} className="flex items-center gap-2 cursor-pointer">
@@ -419,7 +418,7 @@ function Step2({
       >
         <TextField
           variant="standard"
-          label="Fundraising Goal (USD)"
+          label="Fundraising Goal (USD) (Required)"
           type="number"
           fullWidth
           sx={fieldSx}
@@ -506,7 +505,7 @@ function Step3({
           <TextField
             select
             variant="standard"
-            label="Country"
+            label="Country (Required)"
             value={gardenCountry}
             onChange={(e) => setGardenCountry(e.target.value)}
             fullWidth
@@ -519,7 +518,7 @@ function Step3({
           <TextField
             select
             variant="standard"
-            label="State / Province"
+            label="State / Province (Required)"
             value={gardenState}
             onChange={(e) => setGardenState(e.target.value)}
             fullWidth
@@ -530,13 +529,13 @@ function Step3({
               <MenuItem key={code} value={code}>{name}</MenuItem>
             ))}
           </TextField>
-          <StdField label="City" value={gardenCity} onChange={setGardenCity} />
+          <StdField label="City (Required)" value={gardenCity} onChange={setGardenCity} />
         </div>
       </SectionCard>
 
       <SectionCard title="Primary Project Category" required>
         <div className="flex flex-col gap-0">
-          <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">Select one:</p>
+          <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">Select one (Required):</p>
           {PROJECT_CATEGORIES.map((cat) => {
             const isOther = cat === "Other (please specify)";
             return (
@@ -569,7 +568,7 @@ function Step3({
       <SectionCard title="Beneficiary Populations Served" required>
         <div className="flex flex-col gap-0">
           <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-3">
-            Select up to three populations:
+            Select up to three populations (Required):
           </p>
           {BENEFICIARY_POPULATIONS.map((pop) => {
             const isOther = pop === "Other (please specify)";
@@ -863,10 +862,12 @@ function DropZone({
   multiple,
   maxFiles,
   onFiles,
+  required,
 }: {
   multiple: boolean;
   maxFiles: number;
   onFiles: (files: File[]) => void;
+  required?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -925,12 +926,15 @@ function DropZone({
         />
         <IconUpload size={40} color="#2d7a45" className="shrink-0" />
         <p className="text-[14px] text-[rgba(0,0,0,0.87)] text-center">
-          <span className="text-[#1976d2] underline">Click to upload</span>
-          {" or drag and drop"}
+          <span className="text-[#1976d2] underline">Upload</span>
+          {required === true
+            ? " or drag and drop (Required)"
+            : required === false
+            ? " or drag and drop (Optional)"
+            : " or drag and drop"}
         </p>
         <p className="text-[12px] text-[rgba(0,0,0,0.6)] text-center">
-          PNG, JPG, GIF or SVG · max 3 MB
-          {multiple && maxFiles > 1 ? ` · up to ${maxFiles} files` : ""}
+          SVG, PNG, JPG or GIF (max. 3MB)
         </p>
       </div>
       {error && <p className="text-[12px] text-[#d32f2f]">{error}</p>}
@@ -961,6 +965,7 @@ function MainPhotoUpload({
           multiple={false}
           maxFiles={1}
           onFiles={(files) => onFileChange(files[0] ?? null)}
+          required={true}
         />
       )}
       {cropFile && (
@@ -1028,6 +1033,7 @@ function SupportingPhotosUpload({
             const merged = [...files, ...incoming].slice(0, 5);
             onFilesChange(merged);
           }}
+          required={false}
         />
       )}
 
@@ -1078,26 +1084,23 @@ function Step4({
         description="2–3 sentences each"
       >
         <div className="flex flex-col gap-4 w-full">
-          <StdField label="Where is your garden, and who does it serve?" value={gardenStory1} onChange={setGardenStory1} />
-          <StdField label="What challenge does your garden help address, and why does it matter locally?" value={gardenStory2} onChange={setGardenStory2} />
-          <StdField label="What happens in the garden during the growing season?" value={gardenStory3} onChange={setGardenStory3} />
-          <StdField label="What will this year's SeedMoney campaign make possible?" value={gardenStory4} onChange={setGardenStory4} />
+          <StdField label="Where is your garden, and who does it serve? (Required)" value={gardenStory1} onChange={setGardenStory1} />
+          <StdField label="What challenge does your garden help address, and why does it matter locally? (Required)" value={gardenStory2} onChange={setGardenStory2} />
+          <StdField label="What happens in the garden during the growing season? (Required)" value={gardenStory3} onChange={setGardenStory3} />
+          <StdField label="What will this year's SeedMoney campaign make possible? (Required)" value={gardenStory4} onChange={setGardenStory4} />
         </div>
       </SectionCard>
 
       <SectionCard
         title="Main Photo"
-        required
-        description="Upload one clear, high-quality photo that best represents your project. This photo will appear at the top of your campaign page."
+        description="Upload one clear, high-quality photo that best represents your project. This photo will appear at the top of your campaign page. Please choose real, authentic photos of your project — for example, people working in the garden, harvesting food, learning together, or the garden space itself. Do not upload logos, flyers, graphics, or AI-generated images. (Required)"
       >
         <MainPhotoUpload file={mainPhoto} onFileChange={setMainPhoto} />
       </SectionCard>
 
       <SectionCard
         title="Supporting Photos"
-        description={
-          "You may upload up to five additional photos that help tell your garden's story.\n*Please choose real, authentic photos of your project and do not upload logos, flyers, graphics, or AI-generated images."
-        }
+        description="You may upload up to five additional photos that help tell your garden's story. Please choose real, authentic photos of your project — for example, people working in the garden, harvesting food, learning together, or the garden space itself. Do not upload logos, flyers, graphics, or AI-generated images. (Optional)"
       >
         <SupportingPhotosUpload
           files={supportingPhotos}
@@ -1146,26 +1149,38 @@ function Step5({
     <div className="flex flex-col gap-4 w-full">
       <SectionCard title="Organization Information" required>
         <div className="flex flex-col gap-4 w-full">
-          <StdField label="Legal Name of Beneficiary Organization" value={orgName} onChange={setOrgName} />
+          <StdField label="Legal Name of Beneficiary Organization (Required)" value={orgName} onChange={setOrgName} />
           <StdField
-            label="EIN or Public-Sector Identifier"
+            label="EIN or Public-Sector Identifier (Required)"
             value={orgEIN}
             onChange={setOrgEIN}
             placeholder="e.g., 52-3456789"
-            helperText="For US nonprofits, your 9-digit IRS EIN. For schools or government entities, your institutional identifier."
+            helperText="For US nonprofits, your 9-digit IRS EIN. For schools or government entities, your institutional identifier. If you're non-US user, put N/A."
           />
         </div>
       </SectionCard>
 
       <SectionCard title="Beneficiary Organization Mailing Address" required>
         <div className="flex flex-col gap-4 w-full">
-          <StdField label="Street 1" value={street1} onChange={setStreet1} />
-          <StdField label="Street 2" value={street2} onChange={setStreet2} />
-          <StdField label="City" value={mailCity} onChange={setMailCity} />
+          <StdField label="Address Line 1 (Required)" value={street1} onChange={setStreet1} />
+          <StdField label="Apartment, suite, etc. (Optional)" value={street2} onChange={setStreet2} placeholder="e.g., 3rd floor" />
           <TextField
             select
             variant="standard"
-            label="State / Province"
+            label="Country (Required)"
+            value={mailCountry}
+            onChange={(e) => setMailCountry(e.target.value)}
+            fullWidth
+            sx={fieldSx}
+          >
+            {countries.map(({ code, name }) => (
+              <MenuItem key={code} value={code}>{name}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            variant="standard"
+            label="State or Province (Required)"
             value={mailState}
             onChange={(e) => setMailState(e.target.value)}
             fullWidth
@@ -1176,29 +1191,17 @@ function Step5({
               <MenuItem key={code} value={code}>{name}</MenuItem>
             ))}
           </TextField>
-          <StdField label="ZIP / Postal Code" value={mailZip} onChange={setMailZip} />
-          <TextField
-            select
-            variant="standard"
-            label="Country"
-            value={mailCountry}
-            onChange={(e) => setMailCountry(e.target.value)}
-            fullWidth
-            sx={fieldSx}
-          >
-            {countries.map(({ code, name }) => (
-              <MenuItem key={code} value={code}>{name}</MenuItem>
-            ))}
-          </TextField>
+          <StdField label="City or Town (Required)" value={mailCity} onChange={setMailCity} />
+          <StdField label="ZIP/Postal Code (Required)" value={mailZip} onChange={setMailZip} helperText={'Enter "00000" if not applicable'} />
         </div>
       </SectionCard>
 
       <SectionCard title="Primary Contact Information" required>
         <div className="flex flex-col gap-4 w-full">
-          <StdField label="First Name" value={firstName} onChange={setFirstName} />
-          <StdField label="Last Name" value={lastName} onChange={setLastName} />
-          <StdField label="Email" type="email" value={contactEmail} onChange={setContactEmail} />
-          <StdField label="Role or Title" value={contactRole} onChange={setContactRole} />
+          <StdField label="First Name (Required)" value={firstName} onChange={setFirstName} />
+          <StdField label="Last Name (Required)" value={lastName} onChange={setLastName} />
+          <StdField label="Email (Required)" type="email" value={contactEmail} onChange={setContactEmail} />
+          <StdField label="Role or Title (Optional)" value={contactRole} onChange={setContactRole} />
         </div>
       </SectionCard>
     </div>
@@ -1214,6 +1217,64 @@ function ReviewField({ label, value, error }: { label: string; value?: string; e
       <p className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] mt-0.5 min-h-[24px]">
         {value}
       </p>
+    </div>
+  );
+}
+
+function ReviewEditField({ label, value, onChange, error, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void;
+  error?: boolean; type?: string;
+}) {
+  const showError = error && !value;
+  return (
+    <div className={`flex flex-col w-full border-b pb-1 ${showError ? "border-[#d32f2f]" : "border-[rgba(0,0,0,0.42)]"}`}>
+      <p className={`text-[12px] leading-[1.33] ${showError ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.6)]"}`}>{label}</p>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        min={type === "number" ? "0" : undefined}
+        className="text-[16px] leading-[1.5] bg-transparent outline-none py-0.5 min-h-[24px] text-[rgba(0,0,0,0.87)] w-full"
+      />
+    </div>
+  );
+}
+
+function ReviewTextareaField({ label, value, onChange, error }: {
+  label: string; value: string; onChange: (v: string) => void; error?: boolean;
+}) {
+  const showError = error && !value;
+  return (
+    <div className={`flex flex-col w-full border-b pb-1 ${showError ? "border-[#d32f2f]" : "border-[rgba(0,0,0,0.42)]"}`}>
+      <p className={`text-[12px] leading-[1.33] ${showError ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.6)]"}`}>{label}</p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        className="text-[16px] leading-[1.5] bg-transparent outline-none py-0.5 text-[rgba(0,0,0,0.87)] w-full resize-none"
+      />
+    </div>
+  );
+}
+
+function ReviewSelectField({ label, value, onChange, options, error }: {
+  label: string; value: string; onChange: (v: string) => void;
+  options: { code: string; name: string }[]; error?: boolean;
+}) {
+  const showError = error && !value;
+  return (
+    <div className={`flex flex-col w-full border-b pb-1 ${showError ? "border-[#d32f2f]" : "border-[rgba(0,0,0,0.42)]"}`}>
+      <p className={`text-[12px] leading-[1.33] ${showError ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.6)]"}`}>{label}</p>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="text-[16px] leading-[1.5] bg-transparent outline-none py-0.5 min-h-[24px] text-[rgba(0,0,0,0.87)] w-full"
+      >
+        <option value="">None</option>
+        {options.map(({ code, name }) => (
+          <option key={code} value={code}>{name}</option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -1243,28 +1304,15 @@ function ReviewSubSection({
   );
 }
 
-function ReviewErrorBanner({ message, onEdit }: { message: string; onEdit: () => void }) {
+function ReviewErrorBanner({ message }: { message: string }) {
   return (
     <div className="bg-[#fdeded] rounded-[4px] flex items-start px-4 py-[6px] w-full">
-      {/* ErrorOutline icon */}
       <div className="shrink-0 pt-[7px] pr-3">
         <IconErrorOutline size={22} color="#d32f2f" />
       </div>
-      {/* Message */}
       <p className="flex-1 py-2 text-[14px] leading-[1.43] tracking-[0.15px] text-[#5f2120] min-w-0">
         {message}
       </p>
-      {/* Edit button */}
-      <button
-        type="button"
-        onClick={onEdit}
-        className="shrink-0 flex items-center gap-1.5 pl-4 pt-1 hover:opacity-80 transition-opacity"
-      >
-        <IconPencil size={18} color="#d32f2f" />
-        <span className="text-[13px] font-bold leading-[22px] tracking-[0.46px] uppercase text-[#d32f2f]">
-          Edit
-        </span>
-      </button>
     </div>
   );
 }
@@ -1288,34 +1336,96 @@ function ReviewUploadedFile({ name, size }: { name: string; size: string }) {
 
 // ── step 6: Review & Submit ───────────────────────────────────────────────────
 type Step6Props = {
-  campaignTitle: string; peopleCount: string; gardenSize: string;
-  gardenType: string; fundraisingGoal: string;
-  gardenCity: string; gardenState: string; gardenCountry: string;
-  projectCategory: string; projectCategoryOther: string;
-  beneficiaryPops: string[]; beneficiaryOther: string;
-  gardenStory1: string; gardenStory2: string; gardenStory3: string; gardenStory4: string;
-  mainPhoto: File | null; supportingPhotos: File[];
-  orgName: string; orgEIN: string;
-  street1: string; street2: string; mailCity: string; mailState: string;
-  mailZip: string; mailCountry: string;
-  firstName: string; lastName: string; contactEmail: string; contactRole: string;
+  campaignTitle: string; setCampaignTitle: (v: string) => void;
+  peopleCount: string; setPeopleCount: (v: string) => void;
+  gardenSize: string; setGardenSize: (v: string) => void;
+  gardenType: string; setGardenType: (v: string) => void;
+  fundraisingGoal: string; setFundraisingGoal: (v: string) => void;
+  gardenCity: string; setGardenCity: (v: string) => void;
+  gardenState: string; setGardenState: (v: string) => void;
+  gardenCountry: string; setGardenCountry: (v: string) => void;
+  projectCategory: string; setProjectCategory: (v: string) => void;
+  projectCategoryOther: string; setProjectCategoryOther: (v: string) => void;
+  beneficiaryPops: string[]; setBeneficiaryPops: (v: string[]) => void;
+  beneficiaryOther: string; setBeneficiaryOther: (v: string) => void;
+  gardenStory1: string; setGardenStory1: (v: string) => void;
+  gardenStory2: string; setGardenStory2: (v: string) => void;
+  gardenStory3: string; setGardenStory3: (v: string) => void;
+  gardenStory4: string; setGardenStory4: (v: string) => void;
+  mainPhoto: File | null; setMainPhoto: (f: File | null) => void;
+  supportingPhotos: File[]; setSupportingPhotos: (f: File[]) => void;
+  orgName: string; setOrgName: (v: string) => void;
+  orgEIN: string; setOrgEIN: (v: string) => void;
+  street1: string; setStreet1: (v: string) => void;
+  street2: string; setStreet2: (v: string) => void;
+  mailCity: string; setMailCity: (v: string) => void;
+  mailState: string; setMailState: (v: string) => void;
+  mailZip: string; setMailZip: (v: string) => void;
+  mailCountry: string; setMailCountry: (v: string) => void;
+  firstName: string; setFirstName: (v: string) => void;
+  lastName: string; setLastName: (v: string) => void;
+  contactEmail: string; setContactEmail: (v: string) => void;
+  contactRole: string; setContactRole: (v: string) => void;
   statesMap: Record<string, GeoOption[]>; countries: GeoOption[];
-  onGoToStep: (step: Step) => void;
 };
 
 function Step6(props: Step6Props) {
   const {
-    campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
-    gardenCity, gardenState, gardenCountry, projectCategory, projectCategoryOther, beneficiaryPops, beneficiaryOther,
-    gardenStory1, gardenStory2, gardenStory3, gardenStory4,
-    mainPhoto, supportingPhotos,
-    orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
-    firstName, lastName, contactEmail, contactRole,
-    statesMap, countries, onGoToStep,
+    campaignTitle, setCampaignTitle,
+    peopleCount, setPeopleCount,
+    gardenSize, setGardenSize,
+    gardenType, setGardenType,
+    fundraisingGoal, setFundraisingGoal,
+    gardenCity, setGardenCity,
+    gardenState, setGardenState,
+    gardenCountry, setGardenCountry,
+    projectCategory, setProjectCategory,
+    projectCategoryOther, setProjectCategoryOther,
+    beneficiaryPops, setBeneficiaryPops,
+    beneficiaryOther, setBeneficiaryOther,
+    gardenStory1, setGardenStory1,
+    gardenStory2, setGardenStory2,
+    gardenStory3, setGardenStory3,
+    gardenStory4, setGardenStory4,
+    mainPhoto, setMainPhoto,
+    supportingPhotos, setSupportingPhotos,
+    orgName, setOrgName,
+    orgEIN, setOrgEIN,
+    street1, setStreet1,
+    street2, setStreet2,
+    mailCity, setMailCity,
+    mailState, setMailState,
+    mailZip, setMailZip,
+    mailCountry, setMailCountry,
+    firstName, setFirstName,
+    lastName, setLastName,
+    contactEmail, setContactEmail,
+    contactRole, setContactRole,
+    statesMap, countries,
   } = props;
 
-  function lookupName(list: GeoOption[], code: string) {
-    return list.find((o) => o.code === code)?.name ?? code;
+  const mailStateOptions = statesMap[mailCountry] ?? [];
+  const gardenStateOptions = statesMap[gardenCountry] ?? [];
+
+  function handleSwapWithMain(index: number) {
+    const supporting = supportingPhotos[index];
+    if (!supporting) return;
+    const newSupporting = [...supportingPhotos];
+    if (mainPhoto) {
+      newSupporting[index] = mainPhoto;
+    } else {
+      newSupporting.splice(index, 1);
+    }
+    setMainPhoto(supporting);
+    setSupportingPhotos(newSupporting);
+  }
+
+  function toggleBeneficiaryPop(pop: string) {
+    if (beneficiaryPops.includes(pop)) {
+      setBeneficiaryPops(beneficiaryPops.filter((p) => p !== pop));
+    } else if (beneficiaryPops.length < 3) {
+      setBeneficiaryPops([...beneficiaryPops, pop]);
+    }
   }
 
   const campaignError = !campaignTitle || !peopleCount || !gardenSize || !gardenType || !fundraisingGoal;
@@ -1327,21 +1437,23 @@ function Step6(props: Step6Props) {
     <div className="flex flex-col gap-4 w-full">
       {/* ── Campaign Information ── */}
       <ReviewSectionTitle title="Campaign Information" />
-      {campaignError && <ReviewErrorBanner message="Please complete campaign information." onEdit={() => onGoToStep(1)} />}
+      {campaignError && <ReviewErrorBanner message="Please complete campaign information." />}
 
       <ReviewSubSection title="Campaign Title">
-        <ReviewField label="Campaign Title" value={campaignTitle || undefined} error={!campaignTitle} />
+        <ReviewEditField label="Campaign Title (Required)" value={campaignTitle} onChange={setCampaignTitle} error={!campaignTitle} />
         <p className="text-[12px] text-[rgba(0,0,0,0.6)]">60 max characters</p>
       </ReviewSubSection>
 
       <ReviewSubSection title="Project Details & Impact">
-        <ReviewField label="About how many people will benefit from this garden this year?" value={peopleCount || undefined} error={!peopleCount} />
-        <ReviewField label="Approximate garden size or scope" value={gardenSize || undefined} error={!gardenSize} />
-        <div className="flex flex-col gap-1">
-          <p className={`text-[14px] leading-[1.5] ${!gardenType ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.87)]"}`}>Is this a new or existing garden?</p>
+        <ReviewEditField label="About how many people will benefit from this garden this year? (Required)" value={peopleCount} onChange={setPeopleCount} type="number" error={!peopleCount} />
+        <ReviewEditField label="Approximate garden size or scope (Required)" value={gardenSize} onChange={setGardenSize} error={!gardenSize} />
+        <div className="flex flex-col gap-3">
+          <p className={`text-[14px] leading-[1.5] ${!gardenType ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.87)]"}`}>
+            Is this a new or existing garden? (Required)
+          </p>
           {["New garden", "Existing garden"].map((opt) => (
-            <label key={opt} className="flex items-center gap-2">
-              <input type="radio" readOnly checked={gardenType === opt} onChange={() => {}} className="accent-[#2d7a45] size-4" />
+            <label key={opt} className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="review-garden-type" checked={gardenType === opt} onChange={() => setGardenType(opt)} className="accent-[#2d7a45] size-4" />
               <span className={`text-[16px] leading-[1.5] ${gardenType === opt ? "text-[rgba(0,0,0,0.87)]" : !gardenType ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.38)]"}`}>{opt}</span>
             </label>
           ))}
@@ -1349,101 +1461,146 @@ function Step6(props: Step6Props) {
       </ReviewSubSection>
 
       <ReviewSubSection title="Fundraising Goal">
-        <ReviewField label="Fundraising Goal (USD)" value={fundraisingGoal ? `$${Number(fundraisingGoal).toLocaleString()}` : undefined} error={!fundraisingGoal} />
+        <div className={`flex flex-col w-full border-b pb-1 ${!fundraisingGoal ? "border-[#d32f2f]" : "border-[rgba(0,0,0,0.42)]"}`}>
+          <p className={`text-[12px] leading-[1.33] ${!fundraisingGoal ? "text-[#d32f2f]" : "text-[rgba(0,0,0,0.6)]"}`}>Fundraising Goal (USD) (Required)</p>
+          <div className="flex items-center gap-1">
+            <span className="text-[16px] text-[rgba(0,0,0,0.6)]">$</span>
+            <input
+              type="number"
+              min="0"
+              value={fundraisingGoal}
+              onChange={(e) => setFundraisingGoal(e.target.value)}
+              className="text-[16px] leading-[1.5] bg-transparent outline-none py-0.5 min-h-[24px] text-[rgba(0,0,0,0.87)] flex-1"
+            />
+          </div>
+        </div>
       </ReviewSubSection>
 
       {/* ── Garden Information ── */}
       <ReviewSectionTitle title="Garden Information" />
-      {gardenInfoError && <ReviewErrorBanner message="Please complete garden information." onEdit={() => onGoToStep(2)} />}
+      {gardenInfoError && <ReviewErrorBanner message="Please complete garden information." />}
 
       <ReviewSubSection title="Garden Location">
-        <ReviewField label="City*" value={gardenCity || undefined} error={!gardenCity} />
-        <ReviewField label="State / Province*" value={gardenState ? lookupName(statesMap[gardenCountry] ?? [], gardenState) : undefined} error={!gardenState} />
-        <ReviewField label="Country" value={gardenCountry ? lookupName(countries, gardenCountry) : undefined} />
+        <ReviewSelectField label="Country (Required)" value={gardenCountry} onChange={setGardenCountry} options={countries} />
+        <ReviewSelectField label="State / Province (Required)" value={gardenState} onChange={setGardenState} options={gardenStateOptions} error={!gardenState} />
+        <ReviewEditField label="City (Required)" value={gardenCity} onChange={setGardenCity} error={!gardenCity} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Primary Project Category">
-        {projectCategory ? (
-          <div className="flex items-center gap-2">
-            <input type="radio" readOnly checked onChange={() => {}} className="accent-[#2d7a45] size-4" />
-            <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
-              {projectCategory === "Other (please specify)" && projectCategoryOther ? projectCategoryOther : projectCategory}
-            </span>
-          </div>
-        ) : (
-          <p className="text-[14px] text-[#d32f2f]">No category selected</p>
-        )}
+        <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-2">Select one (Required):</p>
+        <div className="flex flex-col gap-0">
+          {PROJECT_CATEGORIES.map((cat) => {
+            const isOther = cat === "Other (please specify)";
+            return (
+              <label key={cat} className="flex items-center gap-2 cursor-pointer py-1">
+                <input
+                  type="radio"
+                  name="review-category"
+                  checked={projectCategory === cat}
+                  onChange={() => setProjectCategory(cat)}
+                  className="accent-[#2d7a45] size-4 shrink-0"
+                />
+                {isOther && projectCategory === cat ? (
+                  <input
+                    type="text"
+                    value={projectCategoryOther}
+                    onChange={(e) => setProjectCategoryOther(e.target.value)}
+                    placeholder="Please specify"
+                    className="flex-1 text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-b border-[rgba(0,0,0,0.42)] focus:border-[#2d7a45] outline-none bg-transparent pb-[2px]"
+                  />
+                ) : (
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{cat}</span>
+                )}
+              </label>
+            );
+          })}
+        </div>
+        {!projectCategory && <p className="text-[14px] text-[#d32f2f] mt-1">No category selected</p>}
       </ReviewSubSection>
 
       <ReviewSubSection title="Beneficiary Populations Served">
-        {beneficiaryPops.length > 0 ? (
-          <div className="flex flex-col gap-1">
-            {beneficiaryPops.map((pop) => (
-              <div key={pop} className="flex items-center gap-2">
-                <input type="checkbox" readOnly checked onChange={() => {}} className="size-[18px] accent-[#2d7a45]" />
-                <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">
-                  {pop === "Other (please specify)" && beneficiaryOther ? beneficiaryOther : pop}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[14px] text-[#d32f2f]">No populations selected</p>
-        )}
+        <p className="text-[14px] text-[rgba(0,0,0,0.6)] mb-2">Select up to three populations (Required):</p>
+        <div className="flex flex-col gap-0">
+          {BENEFICIARY_POPULATIONS.map((pop) => {
+            const isOther = pop === "Other (please specify)";
+            const checked = beneficiaryPops.includes(pop);
+            const disabled = !checked && beneficiaryPops.length >= 3;
+            return (
+              <label key={pop} className={`flex items-center gap-0 py-1 ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}>
+                <div className="flex items-center p-[9px] shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={() => toggleBeneficiaryPop(pop)}
+                    className="size-[18px] accent-[#2d7a45] cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </div>
+                {isOther && checked ? (
+                  <input
+                    type="text"
+                    value={beneficiaryOther}
+                    onChange={(e) => setBeneficiaryOther(e.target.value)}
+                    placeholder="Please specify"
+                    className="flex-1 text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)] border-b border-[rgba(0,0,0,0.42)] focus:border-[#2d7a45] outline-none bg-transparent pb-[2px]"
+                  />
+                ) : (
+                  <span className="text-[16px] leading-[1.5] text-[rgba(0,0,0,0.87)]">{pop}</span>
+                )}
+              </label>
+            );
+          })}
+        </div>
+        {beneficiaryPops.length === 0 && <p className="text-[14px] text-[#d32f2f] mt-1">No populations selected</p>}
       </ReviewSubSection>
 
       {/* ── Garden Story ── */}
       <ReviewSectionTitle title="Garden Story" />
-      {gardenStoryError && <ReviewErrorBanner message="Please complete garden story and add a main photo." onEdit={() => onGoToStep(3)} />}
+      {gardenStoryError && <ReviewErrorBanner message="Please complete garden story and add a main photo." />}
 
       <ReviewSubSection title="Garden Story">
-        <ReviewField label="Where is your garden, and who does it serve?" value={gardenStory1 || undefined} error={!gardenStory1} />
-        <ReviewField label="What challenge does your garden help address, and why does it matter locally?" value={gardenStory2 || undefined} error={!gardenStory2} />
-        <ReviewField label="What happens in the garden during the growing season?" value={gardenStory3 || undefined} error={!gardenStory3} />
-        <ReviewField label="What will this year's SeedMoney campaign make possible?" value={gardenStory4 || undefined} error={!gardenStory4} />
+        <ReviewTextareaField label="Where is your garden, and who does it serve? (Required)" value={gardenStory1} onChange={setGardenStory1} error={!gardenStory1} />
+        <ReviewTextareaField label="What challenge does your garden help address, and why does it matter locally? (Required)" value={gardenStory2} onChange={setGardenStory2} error={!gardenStory2} />
+        <ReviewTextareaField label="What happens in the garden during the growing season? (Required)" value={gardenStory3} onChange={setGardenStory3} error={!gardenStory3} />
+        <ReviewTextareaField label="What will this year's SeedMoney campaign make possible? (Required)" value={gardenStory4} onChange={setGardenStory4} error={!gardenStory4} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Main Photo">
-        {mainPhoto ? (
-          <PhotoPreviewCard file={mainPhoto} />
-        ) : (
-          <p className="text-[14px] text-[#d32f2f]">No photo uploaded</p>
-        )}
+        <MainPhotoUpload file={mainPhoto} onFileChange={setMainPhoto} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Supporting Photos">
-        {supportingPhotos.length > 0 ? (
-          supportingPhotos.map((f, i) => (
-            <PhotoPreviewCard key={i} file={f} />
-          ))
-        ) : (
-          <p className="text-[14px] text-[rgba(0,0,0,0.38)]">No supporting photos uploaded</p>
-        )}
+        <SupportingPhotosUpload
+          files={supportingPhotos}
+          onFilesChange={setSupportingPhotos}
+          mainPhoto={mainPhoto}
+          onSwapWithMain={handleSwapWithMain}
+        />
       </ReviewSubSection>
 
       {/* ── Contact Information ── */}
       <ReviewSectionTitle title="Contact Information" />
-      {contactError && <ReviewErrorBanner message="Please complete contact information." onEdit={() => onGoToStep(4)} />}
+      {contactError && <ReviewErrorBanner message="Please complete contact information." />}
 
       <ReviewSubSection title="Organization Information">
-        <ReviewField label="Legal Name of Beneficiary Organization*" value={orgName || undefined} error={!orgName} />
-        <ReviewField label="EIN or Public-Sector Identifier" value={orgEIN || undefined} />
+        <ReviewEditField label="Legal Name of Beneficiary Organization (Required)" value={orgName} onChange={setOrgName} error={!orgName} />
+        <ReviewEditField label="EIN or Public-Sector Identifier (Required)" value={orgEIN} onChange={setOrgEIN} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Beneficiary Organization Mailing Address">
-        <ReviewField label="Street 1" value={street1 || undefined} error={!street1} />
-        <ReviewField label="Street 2" value={street2 || undefined} />
-        <ReviewField label="City*" value={mailCity || undefined} error={!mailCity} />
-        <ReviewField label="State / Province*" value={mailState ? lookupName(statesMap[mailCountry] ?? [], mailState) : undefined} error={!mailState} />
-        <ReviewField label="ZIP / Postal Code*" value={mailZip || undefined} error={!mailZip} />
-        <ReviewField label="Country" value={mailCountry ? lookupName(countries, mailCountry) : undefined} />
+        <ReviewEditField label="Address Line 1 (Required)" value={street1} onChange={setStreet1} error={!street1} />
+        <ReviewEditField label="Apartment, suite, etc. (Optional)" value={street2} onChange={setStreet2} />
+        <ReviewSelectField label="Country (Required)" value={mailCountry} onChange={setMailCountry} options={countries} />
+        <ReviewSelectField label="State or Province (Required)" value={mailState} onChange={setMailState} options={mailStateOptions} error={!mailState} />
+        <ReviewEditField label="City or Town (Required)" value={mailCity} onChange={setMailCity} error={!mailCity} />
+        <ReviewEditField label="ZIP/Postal Code (Required)" value={mailZip} onChange={setMailZip} error={!mailZip} />
       </ReviewSubSection>
 
       <ReviewSubSection title="Primary Contact Information">
-        <ReviewField label="First Name*" value={firstName || undefined} error={!firstName} />
-        <ReviewField label="Last Name*" value={lastName || undefined} error={!lastName} />
-        <ReviewField label="Email*" value={contactEmail || undefined} error={!contactEmail} />
-        <ReviewField label="Role or Title" value={contactRole || undefined} />
+        <ReviewEditField label="First Name (Required)" value={firstName} onChange={setFirstName} error={!firstName} />
+        <ReviewEditField label="Last Name (Required)" value={lastName} onChange={setLastName} error={!lastName} />
+        <ReviewEditField label="Email (Required)" value={contactEmail} onChange={setContactEmail} error={!contactEmail} />
+        <ReviewEditField label="Role or Title (Optional)" value={contactRole} onChange={setContactRole} />
       </ReviewSubSection>
     </div>
   );
@@ -1681,6 +1838,23 @@ export default function ApplicationPage() {
       orgName, orgEIN, street1, street2, mailCity, mailState, mailZip, mailCountry,
       firstName, lastName, contactEmail, contactRole]);
 
+  // While on review step, keep progress bar validations in sync with live field values
+  useEffect(() => {
+    if (step !== 5) return;
+    setValidations(prev => {
+      const next = [...prev] as ValidationState[];
+      next[1] = (campaignTitle.trim() !== "" && peopleCount.trim() !== "" && gardenSize.trim() !== "" && gardenType !== "" && fundraisingGoal.trim() !== "") ? "ok" : "error";
+      next[2] = (gardenCity.trim() !== "" && gardenState !== "" && projectCategory !== "" && beneficiaryPops.length > 0) ? "ok" : "error";
+      next[3] = (gardenStory1.trim() !== "" && gardenStory2.trim() !== "" && gardenStory3.trim() !== "" && gardenStory4.trim() !== "" && mainPhoto !== null) ? "ok" : "error";
+      next[4] = (orgName.trim() !== "" && street1.trim() !== "" && mailCity.trim() !== "" && mailState.trim() !== "" && mailZip.trim() !== "" && firstName.trim() !== "" && lastName.trim() !== "" && contactEmail.trim() !== "") ? "ok" : "error";
+      return next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, campaignTitle, peopleCount, gardenSize, gardenType, fundraisingGoal,
+      gardenCity, gardenState, projectCategory, beneficiaryPops,
+      gardenStory1, gardenStory2, gardenStory3, gardenStory4, mainPhoto,
+      orgName, street1, mailCity, mailState, mailZip, firstName, lastName, contactEmail]);
+
   useEffect(() => {
     // Fetch countries from REST Countries API
     fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
@@ -1825,7 +1999,7 @@ export default function ApplicationPage() {
             <p className="font-bold text-[24px] md:text-[32px] leading-[1.235] text-[#096b2e]">
               Application
             </p>
-            <p className="p2 whitespace-nowrap" style={{ color: "var(--color-error)" }}>* Indicates required question</p>
+            {step === 0 && <p className="p2 whitespace-nowrap" style={{ color: "var(--color-error)" }}>* Indicates required question</p>}
           </div>
 
           {/* Mobile: horizontal progress stepper */}
@@ -1970,21 +2144,37 @@ export default function ApplicationPage() {
                 statesMap={statesMap} countries={countries}
               />}
               {step === 5 && <Step6
-                campaignTitle={campaignTitle} peopleCount={peopleCount}
-                gardenSize={gardenSize} gardenType={gardenType} fundraisingGoal={fundraisingGoal}
-                gardenCity={gardenCity} gardenState={gardenState} gardenCountry={gardenCountry}
-                projectCategory={projectCategory} projectCategoryOther={projectCategoryOther}
-                beneficiaryPops={beneficiaryPops} beneficiaryOther={beneficiaryOther}
-                gardenStory1={gardenStory1} gardenStory2={gardenStory2}
-                gardenStory3={gardenStory3} gardenStory4={gardenStory4}
-                mainPhoto={mainPhoto} supportingPhotos={supportingPhotos}
-                orgName={orgName} orgEIN={orgEIN}
-                street1={street1} street2={street2} mailCity={mailCity}
-                mailState={mailState} mailZip={mailZip} mailCountry={mailCountry}
-                firstName={firstName} lastName={lastName}
-                contactEmail={contactEmail} contactRole={contactRole}
+                campaignTitle={campaignTitle} setCampaignTitle={setCampaignTitle}
+                peopleCount={peopleCount} setPeopleCount={setPeopleCount}
+                gardenSize={gardenSize} setGardenSize={setGardenSize}
+                gardenType={gardenType} setGardenType={setGardenType}
+                fundraisingGoal={fundraisingGoal} setFundraisingGoal={setFundraisingGoal}
+                gardenCity={gardenCity} setGardenCity={setGardenCity}
+                gardenState={gardenState} setGardenState={setGardenState}
+                gardenCountry={gardenCountry} setGardenCountry={setGardenCountry}
+                projectCategory={projectCategory} setProjectCategory={setProjectCategory}
+                projectCategoryOther={projectCategoryOther} setProjectCategoryOther={setProjectCategoryOther}
+                beneficiaryPops={beneficiaryPops} setBeneficiaryPops={setBeneficiaryPops}
+                beneficiaryOther={beneficiaryOther} setBeneficiaryOther={setBeneficiaryOther}
+                gardenStory1={gardenStory1} setGardenStory1={setGardenStory1}
+                gardenStory2={gardenStory2} setGardenStory2={setGardenStory2}
+                gardenStory3={gardenStory3} setGardenStory3={setGardenStory3}
+                gardenStory4={gardenStory4} setGardenStory4={setGardenStory4}
+                mainPhoto={mainPhoto} setMainPhoto={setMainPhoto}
+                supportingPhotos={supportingPhotos} setSupportingPhotos={setSupportingPhotos}
+                orgName={orgName} setOrgName={setOrgName}
+                orgEIN={orgEIN} setOrgEIN={setOrgEIN}
+                street1={street1} setStreet1={setStreet1}
+                street2={street2} setStreet2={setStreet2}
+                mailCity={mailCity} setMailCity={setMailCity}
+                mailState={mailState} setMailState={setMailState}
+                mailZip={mailZip} setMailZip={setMailZip}
+                mailCountry={mailCountry} setMailCountry={setMailCountry}
+                firstName={firstName} setFirstName={setFirstName}
+                lastName={lastName} setLastName={setLastName}
+                contactEmail={contactEmail} setContactEmail={setContactEmail}
+                contactRole={contactRole} setContactRole={setContactRole}
                 statesMap={statesMap} countries={countries}
-                onGoToStep={handleStepNavigation}
               />}
 
               <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
